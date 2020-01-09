@@ -1,6 +1,7 @@
 ﻿using System;
 using ConsoleStein.Rendering;
 using ConsoleStein.Input;
+using ConsoleStein.Time;
 
 namespace ConsoleStein
 {
@@ -10,18 +11,16 @@ namespace ConsoleStein
         static void Main(string[] args)
         {
             var renderingSystem = new RenderingSystem();
-            renderingSystem.Setup();
+            var inputSystem = new InputSystem();
+            var timeSystem = new TimeSystem();
+            timeSystem.Setup();
+            inputSystem.Setup();
+            renderingSystem.Setup(inputSystem);            
             while(true)
             {
-                if(InputSystem.GetKey(ConsoleKey.D))
-                {
-                    Console.WriteLine("D");
-                }
-                if(InputSystem.GetKey(ConsoleKey.A))
-                {
-                    Console.WriteLine("A");
-                }
+                timeSystem.Update();
                 renderingSystem.Update();
+                inputSystem.Update();
             }
         }
     }
