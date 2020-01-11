@@ -4,6 +4,9 @@ using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using ConsoleStein.Input;
 using ConsoleStein.Time;
+using ConsoleStein.Maths;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ConsoleStein.Rendering
 {
@@ -31,15 +34,14 @@ namespace ConsoleStein.Rendering
         private CharInfo[] CharBuffer { get; set; }
         private SmallRect bufferRect;
         private string Map { get; set; }
+        private string DisplayMap { get; set; }
 
         public short ScreenWidth { get; set; }
         public short ScreenHeight { get; set; }
 
         private float FOV { get; set; } = 3.14159f / 4f;
         private float Depth { get; set; } = 16f;
-        private float Angle { get; set; }
-        private float PlayerX = 8f;
-        private float PlayerY = 5f;
+        private Transform Player { get; set; }
 
         private InputSystem inputSystem;
 
@@ -59,8 +61,23 @@ namespace ConsoleStein.Rendering
             Map += "M..............M";
             Map += "M..............M";
             Map += "MMMMMMMMMMMMMMMM";
+
+            DisplayMap = string.Empty;
+            DisplayMap += "###~LEVEL-1~####";
+            DisplayMap += "#              #";
+            DisplayMap += "#              #";
+            DisplayMap += "#              #";
+            DisplayMap += "#          #####";
+            DisplayMap += "#              #";
+            DisplayMap += "#              #";
+            DisplayMap += "#####          #";
+            DisplayMap += "#              #";
+            DisplayMap += "#              #";
+            DisplayMap += "################";
             ScreenWidth = (short)Console.WindowWidth;
             ScreenHeight = (short)Console.WindowHeight;
+            Player = new Transform();
+            Player.position = new Vector2(8f, 5f);
             UpdateCharBuffer();
         }
 
@@ -71,34 +88,30 @@ namespace ConsoleStein.Rendering
 
             if(inputSystem.GetKey(EKeyCode.A))
             {
-                Angle -= 0.5f * TimeSystem.DeltaTime;
+                Player.rotation -= 0.5f * TimeSystem.DeltaTime;
             }
             if(inputSystem.GetKey(EKeyCode.D))
             {
-                Angle += 0.5f * TimeSystem.DeltaTime;
+                Player.rotation += 0.5f * TimeSystem.DeltaTime;
             }
 
             if(inputSystem.GetKey(EKeyCode.W))
             {
-                PlayerX += (float)Math.Sin(Angle) * TimeSystem.DeltaTime;
-                PlayerY += (float)Math.Cos(Angle) * TimeSystem.DeltaTime;
+                Player.Translate(Player.forward, TimeSystem.DeltaTime);                
 
-                if(Map[(int)PlayerY * 16 + (int)PlayerX] != '.')
+                if(Map[(int)Player.position.y * 16 + (int)Player.position.x] != '.')
                 {
-                    PlayerX -= (float)Math.Sin(Angle) * TimeSystem.DeltaTime;
-                    PlayerY -= (float)Math.Cos(Angle) * TimeSystem.DeltaTime;
+                    Player.Translate(Player.back, TimeSystem.DeltaTime);                    
                 }
             }
 
             if (inputSystem.GetKey(EKeyCode.S))
             {
-                PlayerX -= (float)Math.Sin(Angle) * TimeSystem.DeltaTime;
-                PlayerY -= (float)Math.Cos(Angle) * TimeSystem.DeltaTime;
+                Player.Translate(Player.back, TimeSystem.DeltaTime);                
 
-                if (Map[(int)PlayerY * 16 + (int)PlayerX] != '.')
+                if (Map[(int)Player.position.y * 16 + (int)Player.position.x] != '.')
                 {
-                    PlayerX += (float)Math.Sin(Angle) * TimeSystem.DeltaTime;
-                    PlayerY += (float)Math.Cos(Angle) * TimeSystem.DeltaTime;
+                    Player.Translate(Player.forward, TimeSystem.DeltaTime);                    
                 }
             }
 
@@ -113,39 +126,65 @@ namespace ConsoleStein.Rendering
             
             for(short x = 0; x < ScreenWidth; x++)
             {
-                float angle = Angle - FOV / 2f + x / (float)ScreenWidth * FOV;
+                float angle = Player.rotation - FOV / 2f + x / (float)ScreenWidth * FOV;
                 float dist = 0f;
                 bool hitWall = false;
+                bool hitBoundary = false;
                 short wallColor = 0;
 
-                float eyeX = (float)Math.Sin(angle);
-                float eyeY = (float)Math.Cos(angle);
+                Vector2 eyeVec = new Vector2((float)Math.Sin(angle), (float)Math.Cos(angle));                
                 while(!hitWall && dist < Depth)
                 {
                     dist += 0.1f;
 
-                    int testX = (int)(PlayerX + eyeX * dist);
-                    int testY = (int)(PlayerY + eyeY * dist);
+                    int testX = (int)(Player.position.x + eyeVec.x * dist);
+                    int testY = (int)(Player.position.y + eyeVec.y * dist);
 
                     if(testX < 0 || testX >= 16 || testY < 0 || testY >= 11)
                     {
                         hitWall = true;
                         dist = Depth;
                     }
-                    else
+                    else if(Map[testY * 16 + testX] != '.')
                     {
-                        if(Map[testY * 16 + testX] != '.')
+                        hitWall = true;
+
+                        List<Vector2> p = new List<Vector2>();
+                        for (int j = 0; j < 2; j++)
                         {
-                            hitWall = true;
-                            wallColor = GetWallColor(Map[testY * 16 + testX]);
+                            for (int k = 0; k < 2; k++)
+                            {
+                                Vector2 vec = new Vector2
+                                    (
+                                        (float)testX + j - Player.position.x,
+                                        (float)testY + k - Player.position.y
+                                    );
+                                float magnitude = vec.magnitude;
+                                float dot = Vector2.Dot(eyeVec, vec);
+                                p.Add(new Vector2(magnitude, dot));
+                            }
                         }
+                        p = p.OrderBy(v => v.x).ToList();
+
+                        float bound = 0.005f;
+                        if ((float)Math.Acos(p[0].y) < bound)
+                            hitBoundary = true;
+                        if ((float)Math.Acos(p[1].y) < bound)
+                            hitBoundary = true;
+                        if ((float)Math.Acos(p[2].y) < bound)
+                            hitBoundary = true;
+
+                        wallColor = GetWallColor(Map[testY * 16 + testX]);
                     }
                 }
 
                 int ceiling = (int)((ScreenHeight / 2f) - ScreenHeight / (dist));
                 int floor = ScreenHeight - ceiling;
 
-                byte wallShade = GetWallShade(dist);                
+                byte wallShade = GetWallShade(dist);
+
+                if (hitBoundary)
+                    wallShade = (byte)' ';
 
                 for(int y = 0; y < ScreenHeight; y++)
                 {
@@ -160,6 +199,7 @@ namespace ConsoleStein.Rendering
                     {
                         CharBuffer[index].Attributes = wallColor;
                         CharBuffer[index].Char.AsciiChar = wallShade;
+                        CharBuffer[index].Char.UnicodeChar = (char)wallShade;
                     }
                     else
                     {
@@ -168,11 +208,30 @@ namespace ConsoleStein.Rendering
                     }
                 }
             }
+            PrintText(new RectInt(0, 0, 16, 11), DisplayMap, ConsoleColor.Cyan);
+            PrintText(new RectInt((int)Player.position.x, 10 - (int)Player.position.y,1,1), ((char)GetRotationChar(Player.rotation)).ToString(), ConsoleColor.Yellow);
 
             WriteConsoleOutput(Handle, CharBuffer,
                      new Coord() { X = width, Y = height },
                      new Coord() { X = 0, Y = 0 },
                      ref bufferRect);            
+        }  
+        
+        public void PrintText(RectInt rect, string text, ConsoleColor color, bool blackIsTransparency = false)
+        {
+            for (int x = 0; x < rect.width; x++)
+            {
+                for (int y = 0; y < rect.height; y++)
+                {
+                    int rectIndex = y * 16 + x;
+                    int screenIndex = (rect.y + y) * ScreenWidth + rect.x + x;
+                    if (text[rectIndex] == ' ' && blackIsTransparency)
+                        continue;
+                    CharBuffer[screenIndex].Attributes = (short)color;
+                    CharBuffer[screenIndex].Char.UnicodeChar = text[rectIndex];
+                    CharBuffer[screenIndex].Char.AsciiChar = (byte)text[rectIndex];
+                }
+            }
         }
 
         private void UpdateCharBuffer()
@@ -224,6 +283,44 @@ namespace ConsoleStein.Rendering
             }
             return (byte)' ';
 
+        }
+
+        private byte GetRotationChar(float rotation)
+        {
+            float angle = rotation * (180f / (float)Math.PI);
+            angle %= 360;
+            if (angle < 0)
+                angle += 360;
+            int snap = (int)(Math.Round(angle / 45f) * 45f);
+            switch(snap)
+            {
+                case 0:
+                case 360:
+                    return 94;
+
+                case 45:
+                    return 191;                    
+
+                case 90:
+
+                    return 62;
+
+                case 135:
+                    return 217;
+
+                case 180:
+                    return 118;
+
+                case 225:
+                    return 192;
+
+                case 270:
+                    return 60;
+
+                case 315:
+                    return 218;
+            }
+            return 94;
         }
 
         private short GetWallColor(char code)
