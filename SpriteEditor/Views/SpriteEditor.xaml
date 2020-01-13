@@ -1,0 +1,98 @@
+﻿<Window x:Class="SpriteEditor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SpriteEditor"
+		xmlns:models="clr-namespace:SpriteEditor.Models"
+        mc:Ignorable="d"
+        Title="Sprite Editor" Height="450" Width="800" Name="SpriteEditor">
+    <Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="120"/>
+			<ColumnDefinition/>
+		</Grid.ColumnDefinitions>
+		<TabControl SelectedIndex="{Binding TabIndex, Mode=TwoWay}">
+			<TabItem Header="Characters">
+				<ListBox ItemsSource="{Binding CharacterList}" ScrollViewer.VerticalScrollBarVisibility="Auto" SelectedIndex="{Binding SelectedCharacterIndex, Mode=TwoWay}">
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<UniformGrid Columns="3" VerticalAlignment="Top"/>
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<ListBoxItem Background="LightGray" IsHitTestVisible="False" Width="20" Height="20" Content="{Binding}"/>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+					<ListBox.ItemContainerStyle>
+						<Style TargetType="ListBoxItem">
+							<Setter Property="Padding" Value="5,0,0,0"/>
+							<Setter Property="Margin" Value="0"/>
+							<Setter Property="Width" Value="30"/>
+							<Setter Property="Height" Value="30"/>
+						</Style>
+					</ListBox.ItemContainerStyle>
+				</ListBox>
+			</TabItem>
+			<TabItem Header="Colors">
+				<ListBox ItemsSource="{Binding ColorList}" ScrollViewer.VerticalScrollBarVisibility="Auto" SelectedIndex="{Binding SelectedColorIndex, Mode=TwoWay}">
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<UniformGrid Columns="3" VerticalAlignment="Top"/>
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+					<ListBox.ItemTemplate>
+						<DataTemplate DataType="{x:Type models:ColorEntry}">
+							<ListBoxItem Background="{Binding MediaColor}" IsHitTestVisible="False" Width="20" Height="20"/>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+					<ListBox.ItemContainerStyle>
+						<Style TargetType="ListBoxItem">
+							<Setter Property="Padding" Value="5,0,0,0"/>
+							<Setter Property="Margin" Value="0"/>
+							<Setter Property="Width" Value="30"/>
+							<Setter Property="Height" Value="30"/>
+						</Style>
+					</ListBox.ItemContainerStyle>
+				</ListBox>
+			</TabItem>
+		</TabControl>
+		<Grid Grid.Column="1">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="25"/>
+				<RowDefinition/>
+			</Grid.RowDefinitions>
+			<StackPanel Orientation="Horizontal">
+				<Label>Width</Label>
+				<TextBox Width="30" Height="15" Text="{Binding GridWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+				<Label>Height</Label>
+				<TextBox Width="30" Height="15" Text="{Binding GridHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+			</StackPanel>
+			<ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+				<Grid Width="{Binding PixelWidth}" Height="{Binding PixelHeight}" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+					<ListView ItemsSource="{Binding Pixels}" ScrollViewer.VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Center" VerticalAlignment="Center">
+						<ListView.ItemsPanel>
+							<ItemsPanelTemplate>
+								<UniformGrid Background="White" Columns="{Binding GridWidth}" Rows="{Binding GridHeight}"/>
+							</ItemsPanelTemplate>
+						</ListView.ItemsPanel>
+						<ListView.ItemTemplate>
+							<DataTemplate>
+								<Button Background="White" Foreground="{Binding Color.MediaColor}" Content="{Binding Character}" Width="20" Height="20" Command="{Binding ElementName=SpriteEditor, Path=DataContext.SelectPixelCommand}" CommandParameter="{Binding}"/>
+							</DataTemplate>
+						</ListView.ItemTemplate>
+						<ListView.ItemContainerStyle>
+							<Style TargetType="ListBoxItem">
+								<Setter Property="Padding" Value="0"/>
+								<Setter Property="Margin" Value="0"/>
+								<Setter Property="Width" Value="20"/>
+								<Setter Property="Height" Value="20"/>
+							</Style>
+						</ListView.ItemContainerStyle>
+					</ListView>
+				</Grid>
+			</ScrollViewer>
+		</Grid>
+    </Grid>
+</Window>

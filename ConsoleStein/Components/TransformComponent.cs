@@ -1,8 +1,9 @@
 ﻿using System;
+using ConsoleStein.Maths;
 
-namespace ConsoleStein.Maths
+namespace ConsoleStein.Components
 {
-    public class Transform
+    public sealed class TransformComponent : Component
     {
         public Vector2 position;
 

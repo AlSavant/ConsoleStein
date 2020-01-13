@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ConsoleStein.Maths;
 
 namespace ConsoleStein.Components
 {
-    public class CameraComponent
+    public sealed class CameraComponent : Component
     {
-        public float FieldOfView = 90f;
-        public float FarCullingDistance = 100f;
-        public float NearCullingDistance = 0.5f;
+        public float FieldOfView { get; set; } = 3.14159f / 4f;
+        public float FarClippingDistance { get; set; } = 100f;
+        public float NearClippingDistance { get; set; } = 0.5f;
+        public Rect ViewPort { get; set; } = new Rect(0f, 0f, 1f, 1f);
     }
 }

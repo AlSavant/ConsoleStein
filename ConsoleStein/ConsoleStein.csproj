@@ -46,11 +46,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\CameraComponent.cs" />
+    <Compile Include="Components\Component.cs" />
     <Compile Include="ConsoleStein.cs" />
+    <Compile Include="Entity.cs" />
     <Compile Include="Input\EKeyCode.cs" />
     <Compile Include="Input\InputSystem.cs" />
+    <Compile Include="Maths\Rect.cs" />
     <Compile Include="Maths\RectInt.cs" />
-    <Compile Include="Maths\Transform.cs" />
+    <Compile Include="Components\TransformComponent.cs" />
     <Compile Include="Maths\Vector2.cs" />
     <Compile Include="Maths\Vector2Int.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -61,5 +64,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
