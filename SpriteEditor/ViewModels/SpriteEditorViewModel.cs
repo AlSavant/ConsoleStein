@@ -122,6 +122,19 @@ namespace SpriteEditor.ViewModels
                 SetProperty(ref importedArt, value, "ImportedArt");
             }
         }
+
+        private bool canPaintCharacters = true;
+        public bool CanPaintCharacters
+        {
+            get
+            {
+                return canPaintCharacters;
+            }
+            set
+            {
+                SetProperty(ref canPaintCharacters, value, "CanPaintCharacters");
+            }
+        }
                 
         public ObservableCollectionEx<PixelEntry> Pixels { get; set; }         
 
@@ -191,7 +204,8 @@ namespace SpriteEditor.ViewModels
         private void SelectPixel(object param)
         {
             PixelEntry pixel = (PixelEntry)param;
-            pixel.Character = SelectedCharacter;
+            if(CanPaintCharacters)
+                pixel.Character = SelectedCharacter;
             pixel.Color = SelectedColor;                       
             OnPropertyChanged("Pixels");
         }
@@ -215,7 +229,8 @@ namespace SpriteEditor.ViewModels
         {
             for(int i = 0; i < Pixels.Count; i++)
             {
-                Pixels[i].Character = SelectedCharacter;
+                if(CanPaintCharacters)
+                    Pixels[i].Character = SelectedCharacter;
                 Pixels[i].Color = SelectedColor;
             }
         }
@@ -239,7 +254,8 @@ namespace SpriteEditor.ViewModels
         {
             for (int i = 0; i < Pixels.Count; i++)
             {
-                Pixels[i].Character = ' ';
+                if(CanPaintCharacters)
+                    Pixels[i].Character = ' ';
                 Pixels[i].Color = ColorEntry.FromConsoleColor(ConsoleColor.Black);
             }
         }
@@ -280,7 +296,7 @@ namespace SpriteEditor.ViewModels
                     pixel.Color = SelectedColor;
                 }
             }
-            ImportedArt = String.Empty;
+            ImportedArt = string.Empty;
             OnPropertyChanged("Pixels");
         }
     }

@@ -6,51 +6,44 @@
         xmlns:local="clr-namespace:SpriteEditor"
 		xmlns:models="clr-namespace:SpriteEditor.Models"
         mc:Ignorable="d"
+		Icon="/SpriteEditor;component/Resources/editor_icon.png"
         Title="Sprite Editor" Height="600" Width="800" Name="SpriteEditor">
     <Grid>
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="125"/>
-			<ColumnDefinition/>
-		</Grid.ColumnDefinitions>
-		<GroupBox Header="Characters">
-			<ListBox ItemsSource="{Binding CharacterList}" ScrollViewer.VerticalScrollBarVisibility="Auto" SelectedIndex="{Binding SelectedCharacterIndex, Mode=TwoWay}">
-				<ListBox.ItemsPanel>
-					<ItemsPanelTemplate>
-						<UniformGrid Columns="3" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-					</ItemsPanelTemplate>
-				</ListBox.ItemsPanel>
-				<ListBox.ItemTemplate>
-					<DataTemplate>
-						<ListBoxItem Background="LightGray" IsHitTestVisible="False" Width="20" Height="20" Content="{Binding}"/>
-					</DataTemplate>
-				</ListBox.ItemTemplate>
-				<ListBox.ItemContainerStyle>
-					<Style TargetType="ListBoxItem">
-						<Setter Property="Padding" Value="5,0,0,0"/>
-						<Setter Property="Margin" Value="0"/>
-						<Setter Property="Width" Value="30"/>
-						<Setter Property="Height" Value="30"/>
-					</Style>
-				</ListBox.ItemContainerStyle>
-			</ListBox>
-		</GroupBox>
-		<Grid Grid.Column="1">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="60"/>
-				<RowDefinition Height="25"/>
-				<RowDefinition/>
-			</Grid.RowDefinitions>
-			<Grid Grid.Row="0">
-				<GroupBox Header="Color Palette">
-					<ListBox ItemsSource="{Binding ColorList}" SelectedIndex="{Binding SelectedColorIndex, Mode=TwoWay}">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="20"/>
+			<RowDefinition/>
+		</Grid.RowDefinitions>
+		<Menu Grid.Row="0">
+			<MenuItem Header="_File">
+				<MenuItem Header="_New"/>
+				<MenuItem Header="_Open..."/>
+				<MenuItem Header="_Save"/>
+				<MenuItem Header="_Save As..."/>
+				<Separator/>
+				<MenuItem Header="_Exit"/>
+			</MenuItem>
+		</Menu>
+		<Grid Grid.Row="1">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="125"/>
+				<ColumnDefinition/>
+			</Grid.ColumnDefinitions>
+			<GroupBox Header="Characters">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="20"/>
+						<RowDefinition/>
+					</Grid.RowDefinitions>
+					<CheckBox Content="Paint Characters" IsChecked="{Binding CanPaintCharacters, Mode=TwoWay}"></CheckBox>
+					<ListBox IsEnabled="{Binding CanPaintCharacters}" Grid.Row="1" ItemsSource="{Binding CharacterList}" ScrollViewer.VerticalScrollBarVisibility="Auto" SelectedIndex="{Binding SelectedCharacterIndex, Mode=TwoWay}">
 						<ListBox.ItemsPanel>
 							<ItemsPanelTemplate>
-								<UniformGrid Rows="1" HorizontalAlignment="Left"/>
+								<UniformGrid Columns="3" VerticalAlignment="Top" HorizontalAlignment="Left"/>
 							</ItemsPanelTemplate>
 						</ListBox.ItemsPanel>
 						<ListBox.ItemTemplate>
-							<DataTemplate DataType="{x:Type models:ColorEntry}">
-								<ListBoxItem Background="{Binding MediaColor}" IsHitTestVisible="False" Width="20" Height="20"/>
+							<DataTemplate>
+								<ListBoxItem Background="LightGray" IsHitTestVisible="False" Width="20" Height="20" Content="{Binding}"/>
 							</DataTemplate>
 						</ListBox.ItemTemplate>
 						<ListBox.ItemContainerStyle>
@@ -59,46 +52,78 @@
 								<Setter Property="Margin" Value="0"/>
 								<Setter Property="Width" Value="30"/>
 								<Setter Property="Height" Value="30"/>
+								<Setter Property="IsEnabled" Value="{Binding CanPaintItems}"/>
 							</Style>
 						</ListBox.ItemContainerStyle>
 					</ListBox>
-				</GroupBox>
-			</Grid>
-			<StackPanel Orientation="Horizontal" Grid.Row="1">
-				<Label>Width</Label>
-				<TextBox Width="30" Height="15" Text="{Binding GridWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-				<Label>Height</Label>
-				<TextBox Width="30" Height="15" Text="{Binding GridHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-				<Button Width="40" Margin="5,5,5,5" FontSize="9" Content="Fill" Command="{Binding Path=FillCommand}"/>
-				<Button Width="40" Margin="2,5,5,5" FontSize="9" Content="Clear" Command="{Binding Path=ClearCommand}"/>
-				<Label Content="Imported ASCII Art" Margin="10,0,0,0"/>
-				<TextBox MaxLines="1" Width="200" Margin="0,5,0,5" Text="{Binding ImportedArt, Mode=TwoWay}" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True"/>
-				<Button Content="Import" Margin="5,5,5,5" FontSize="9" Width="50" Command="{Binding Path=ImportArtCommand}"></Button>
-			</StackPanel>
-			<ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-				<Grid Width="{Binding PixelWidth}" Height="{Binding PixelHeight}" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
-					<ListView ItemsSource="{Binding Pixels}" ScrollViewer.VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Center" VerticalAlignment="Center">
-						<ListView.ItemsPanel>
-							<ItemsPanelTemplate>
-								<UniformGrid Background="White" Columns="{Binding GridWidth}" Rows="{Binding GridHeight}"/>
-							</ItemsPanelTemplate>
-						</ListView.ItemsPanel>
-						<ListView.ItemTemplate>
-							<DataTemplate>
-								<Button Background="Black" Foreground="{Binding Color.MediaColor}" Content="{Binding Character}" Width="20" Height="20" Command="{Binding ElementName=SpriteEditor, Path=DataContext.SelectPixelCommand}" CommandParameter="{Binding}"/>
-							</DataTemplate>
-						</ListView.ItemTemplate>
-						<ListView.ItemContainerStyle>
-							<Style TargetType="ListBoxItem">
-								<Setter Property="Padding" Value="0"/>
-								<Setter Property="Margin" Value="0"/>
-								<Setter Property="Width" Value="20"/>
-								<Setter Property="Height" Value="20"/>
-							</Style>
-						</ListView.ItemContainerStyle>
-					</ListView>
 				</Grid>
-			</ScrollViewer>
+			</GroupBox>
+			<Grid Grid.Column="1">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="60"/>
+					<RowDefinition Height="25"/>
+					<RowDefinition/>
+				</Grid.RowDefinitions>
+				<Grid Grid.Row="0">
+					<GroupBox Header="Color Palette">
+						<ListBox ItemsSource="{Binding ColorList}" SelectedIndex="{Binding SelectedColorIndex, Mode=TwoWay}">
+							<ListBox.ItemsPanel>
+								<ItemsPanelTemplate>
+									<UniformGrid Rows="1" HorizontalAlignment="Left"/>
+								</ItemsPanelTemplate>
+							</ListBox.ItemsPanel>
+							<ListBox.ItemTemplate>
+								<DataTemplate DataType="{x:Type models:ColorEntry}">
+									<ListBoxItem Background="{Binding MediaColor}" IsHitTestVisible="False" Width="20" Height="20"/>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+							<ListBox.ItemContainerStyle>
+								<Style TargetType="ListBoxItem">
+									<Setter Property="Padding" Value="5,0,0,0"/>
+									<Setter Property="Margin" Value="0"/>
+									<Setter Property="Width" Value="30"/>
+									<Setter Property="Height" Value="30"/>
+								</Style>
+							</ListBox.ItemContainerStyle>
+						</ListBox>
+					</GroupBox>
+				</Grid>
+				<StackPanel Orientation="Horizontal" Grid.Row="1">
+					<Label>Width</Label>
+					<TextBox Width="30" Height="15" Text="{Binding GridWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+					<Label>Height</Label>
+					<TextBox Width="30" Height="15" Text="{Binding GridHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+					<Button Width="40" Margin="5,5,5,5" FontSize="9" Content="Fill" Command="{Binding Path=FillCommand}"/>
+					<Button Width="40" Margin="2,5,5,5" FontSize="9" Content="Clear" Command="{Binding Path=ClearCommand}"/>
+					<Label Content="Imported ASCII Art" Margin="10,0,0,0"/>
+					<TextBox MaxLines="1" Width="200" Margin="0,5,0,5" Text="{Binding ImportedArt, Mode=TwoWay}" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True"/>
+					<Button Content="Import" Margin="5,5,5,5" FontSize="9" Width="50" Command="{Binding Path=ImportArtCommand}"></Button>
+				</StackPanel>
+				<ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+					<Grid Width="{Binding PixelWidth}" Height="{Binding PixelHeight}" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+						<ListView ItemsSource="{Binding Pixels}" ScrollViewer.VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Center" VerticalAlignment="Center">
+							<ListView.ItemsPanel>
+								<ItemsPanelTemplate>
+									<UniformGrid Background="White" Columns="{Binding GridWidth}" Rows="{Binding GridHeight}"/>
+								</ItemsPanelTemplate>
+							</ListView.ItemsPanel>
+							<ListView.ItemTemplate>
+								<DataTemplate>
+									<Button Background="Black" Foreground="{Binding Color.MediaColor}" Content="{Binding Character}" Width="20" Height="20" Command="{Binding ElementName=SpriteEditor, Path=DataContext.SelectPixelCommand}" CommandParameter="{Binding}"/>
+								</DataTemplate>
+							</ListView.ItemTemplate>
+							<ListView.ItemContainerStyle>
+								<Style TargetType="ListBoxItem">
+									<Setter Property="Padding" Value="0"/>
+									<Setter Property="Margin" Value="0"/>
+									<Setter Property="Width" Value="20"/>
+									<Setter Property="Height" Value="20"/>
+								</Style>
+							</ListView.ItemContainerStyle>
+						</ListView>
+					</Grid>
+				</ScrollViewer>
+			</Grid>
 		</Grid>
-    </Grid>
+	</Grid>
 </Window>
