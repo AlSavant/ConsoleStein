@@ -2,9 +2,9 @@
 using System.Text;
 using SpriteEditor.Models;
 using System.Collections.ObjectModel;
-using System.Windows.Media;
 using System.Windows.Input;
 using SpriteEditor.Commands;
+using System.Linq;
 
 namespace SpriteEditor.ViewModels
 {
@@ -110,19 +110,19 @@ namespace SpriteEditor.ViewModels
         }
         private ColorEntry SelectedColor { get; set; }
 
-        private int tabIndex = 0;
-        public int TabIndex
+        private string importedArt;
+        public string ImportedArt
         {
             get
             {
-                return tabIndex;
+                return importedArt;
             }
             set
             {
-                SetProperty(ref tabIndex, value, "TabIndex");
+                SetProperty(ref importedArt, value, "ImportedArt");
             }
         }
-        
+                
         public ObservableCollectionEx<PixelEntry> Pixels { get; set; }         
 
         public SpriteEditorViewModel()
@@ -148,26 +148,14 @@ namespace SpriteEditor.ViewModels
             var consoleColors = (ConsoleColor[])Enum.GetValues(typeof(ConsoleColor));
             for(int i = 0; i < consoleColors.Length; i++)
             {
-                var entry = new ColorEntry();
-                entry.ConsoleColor = consoleColors[i];
-                try
-                {
-                    entry.MediaColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString(entry.ConsoleColor.ToString()));
-                }
-                catch
-                {
-                    if (entry.ConsoleColor == ConsoleColor.DarkYellow)
-                    {
-                        entry.MediaColor = new SolidColorBrush(Colors.Khaki);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Could not resolve color {entry.ConsoleColor.ToString()}!");
-                    }
-                    
-                }
+                var entry = ColorEntry.FromConsoleColor(consoleColors[i]);                
                 ColorList.Add(entry);
             }
+            var last = ColorList[ColorList.Count - 1];
+            ColorList[ColorList.Count - 1] = ColorList[0];
+            ColorList[0] = last;
+            SelectedCharacter = CharacterList[0];
+            SelectedColor = ColorList[0];
             Pixels = new ObservableCollectionEx<PixelEntry>();
             Pixels.ItemPropertyChanged += (o, e) => { OnPropertyChanged("Pixels"); };
             OnGridResized();
@@ -176,13 +164,12 @@ namespace SpriteEditor.ViewModels
         private void OnGridResized()
         {
             Pixels.Clear();
-            for(int i = 0; i < GridHeight * GridWidth; i++)
+
+            for (int i = 0; i < GridHeight * GridWidth; i++)
             {
                 Pixels.Add(new PixelEntry());
                 Pixels[i].Character = ' ';
-                Pixels[i].Color = new ColorEntry();
-                Pixels[i].Color.ConsoleColor = ConsoleColor.Black;
-                Pixels[i].Color.MediaColor = new SolidColorBrush(Colors.Black);
+                Pixels[i].Color = ColorEntry.FromConsoleColor(ConsoleColor.Black);
             }
         }
 
@@ -204,18 +191,97 @@ namespace SpriteEditor.ViewModels
         private void SelectPixel(object param)
         {
             PixelEntry pixel = (PixelEntry)param;
-            switch(TabIndex)
-            {
-                case 0:
-                    pixel.Character = SelectedCharacter;
-                    break;
-
-                case 1:
-                    pixel.Color = SelectedColor;
-                    break;
-            }
+            pixel.Character = SelectedCharacter;
+            pixel.Color = SelectedColor;                       
             OnPropertyChanged("Pixels");
         }
 
+        private ICommand fillCommand;
+        public ICommand FillCommand
+        {
+            get
+            {
+                if (fillCommand == null)
+                {
+                    fillCommand = new RelayCommand(
+                        param => Fill()
+                    );
+                }
+                return fillCommand;
+            }
+        }
+
+        private void Fill()
+        {
+            for(int i = 0; i < Pixels.Count; i++)
+            {
+                Pixels[i].Character = SelectedCharacter;
+                Pixels[i].Color = SelectedColor;
+            }
+        }
+
+        private ICommand clearCommand;
+        public ICommand ClearCommand
+        {
+            get
+            {
+                if (clearCommand == null)
+                {
+                    clearCommand = new RelayCommand(
+                        param => Clear()
+                    );
+                }
+                return clearCommand;
+            }
+        }
+
+        private void Clear()
+        {
+            for (int i = 0; i < Pixels.Count; i++)
+            {
+                Pixels[i].Character = ' ';
+                Pixels[i].Color = ColorEntry.FromConsoleColor(ConsoleColor.Black);
+            }
+        }
+
+        private ICommand importArtCommand;
+        public ICommand ImportArtCommand
+        {
+            get
+            {
+                if (importArtCommand == null)
+                {
+                    importArtCommand = new RelayCommand(
+                        param => ImportArt()
+                    );
+                }
+                return importArtCommand;
+            }
+        }
+
+        private void ImportArt()
+        {
+            if (string.IsNullOrEmpty(ImportedArt))
+                return;
+            var lines = ImportedArt.Split('\n');
+            GridHeight = lines.Length;
+            var ordered = lines.OrderByDescending(x => x.Length);
+            GridWidth = ordered.First().Length;
+            OnGridResized();
+            for(int y = 0; y < lines.Length; y++)
+            {
+                var line = lines[y];
+                for (int x = 0; x < GridWidth; x++)
+                {
+                    if (x >= line.Length)
+                        continue;
+                    var pixel = Pixels[y * GridWidth + x];
+                    pixel.Character = line[x];
+                    pixel.Color = SelectedColor;
+                }
+            }
+            ImportedArt = String.Empty;
+            OnPropertyChanged("Pixels");
+        }
     }
 }
