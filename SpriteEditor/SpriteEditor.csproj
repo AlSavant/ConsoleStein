@@ -66,6 +66,7 @@
     </Compile>
     <Compile Include="Commands\RelayCommand.cs" />
     <Compile Include="Models\ColorEntry.cs" />
+    <Compile Include="Models\ConsoleSprite.cs" />
     <Compile Include="Models\ObservableCollectionEx.cs" />
     <Compile Include="Models\PixelEntry.cs" />
     <Compile Include="ViewModels\SpriteEditorViewModel.cs" />
