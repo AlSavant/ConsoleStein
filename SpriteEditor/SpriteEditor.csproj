@@ -105,5 +105,14 @@
   <ItemGroup>
     <Resource Include="Resources\editor_icon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\save.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\document_new.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\document_open.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

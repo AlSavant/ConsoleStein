@@ -12,6 +12,8 @@ using System.Windows;
 using System.Windows.Media;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Drawing;
+using System.Windows.Media.Imaging;
 
 namespace SpriteEditor.ViewModels
 {
@@ -700,6 +702,36 @@ namespace SpriteEditor.ViewModels
                 return true;
             var messageBoxResult = MessageBox.Show("You have pending unsaved changes. Do you wish to discard them?", "Discard Changes", MessageBoxButton.YesNo);
             return messageBoxResult == MessageBoxResult.Yes;
+        }
+
+        private ICommand quitApplicationCommand;
+        public ICommand QuitApplicationCommand
+        {
+            get
+            {
+                if (quitApplicationCommand == null)
+                {
+                    quitApplicationCommand = new RelayCommand(
+                        param => QuitApplication()
+                    );
+                }
+                return quitApplicationCommand;
+            }
+        }
+
+        private void QuitApplication()
+        {
+            Application.Current.Shutdown();
+        }
+
+        public BitmapSource SaveIcon
+        {
+            get
+            {
+                Icon icon = SystemIcons.WinLogo;
+
+                return System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            }
         }
     }
 }

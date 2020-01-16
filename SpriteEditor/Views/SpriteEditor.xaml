@@ -7,7 +7,7 @@
 		xmlns:models="clr-namespace:SpriteEditor.Models"
         mc:Ignorable="d"
 		Icon="/SpriteEditor;component/Resources/editor_icon.png"
-        Title="Sprite Editor" Height="600" Width="1000" Name="SpriteEditor">
+        Title="Sprite Editor" Height="600" Width="1000" Name="SpriteEditor" KeyDown="SpriteEditor_KeyDown">
     <Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="20"/>
@@ -15,11 +15,67 @@
 		</Grid.RowDefinitions>
 		<Menu Grid.Row="0">
 			<MenuItem Header="_File">
-				<MenuItem Header="_New" Command="{Binding NewSpriteCommand}"/>
-				<MenuItem Header="_Open..." Command="{Binding OpenSpriteCommand}"/>
+				<MenuItem Command="{Binding NewSpriteCommand}">
+					<MenuItem.Icon>
+						<Image Source="pack://application:,,,/Resources/document_new.png"></Image>
+					</MenuItem.Icon>
+					<MenuItem.Header>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="80"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Grid.Column="0">New</TextBlock>
+							<TextBlock Grid.Column="1">Ctrl+N</TextBlock>
+						</Grid>
+					</MenuItem.Header>
+				</MenuItem>
+				<MenuItem Command="{Binding OpenSpriteCommand}">
+					<MenuItem.Icon>
+						<Image Source="pack://application:,,,/Resources/document_open.png"></Image>
+					</MenuItem.Icon>
+					<MenuItem.Header>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="80"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Grid.Column="0">Open...</TextBlock>
+							<TextBlock Grid.Column="1">Ctrl+O</TextBlock>
+						</Grid>
+					</MenuItem.Header>
+				</MenuItem>
 				<Separator/>
-				<MenuItem Header="_Save" IsEnabled="{Binding CanSave}" Command="{Binding SaveFileCommand}"/>
-				<MenuItem Header="_Save As..." IsEnabled="{Binding IsDirty}" Command="{Binding SaveFileWithLocationCommand}"/>
+				<MenuItem IsEnabled="{Binding CanSave}" Command="{Binding SaveFileCommand}">
+					<MenuItem.Icon>
+						<Image Source="pack://application:,,,/Resources/save.png"></Image>
+					</MenuItem.Icon>
+					<MenuItem.Header>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="80"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Grid.Column="0">Save</TextBlock>
+							<TextBlock Grid.Column="1">Ctrl+S</TextBlock>
+						</Grid>
+					</MenuItem.Header>
+				</MenuItem>
+				<MenuItem IsEnabled="{Binding IsDirty}" Command="{Binding SaveFileWithLocationCommand}">
+					<MenuItem.Icon>
+						<Image Source="pack://application:,,,/Resources/save.png"></Image>
+					</MenuItem.Icon>
+					<MenuItem.Header>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="80"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Grid.Column="0">Save As...</TextBlock>
+							<TextBlock Grid.Column="1">Ctrl+Shift+S</TextBlock>
+						</Grid>
+					</MenuItem.Header>
+				</MenuItem>
 				<Separator/>
 				<MenuItem Header="Recent Files" IsEnabled="{Binding CanBrowseRecents}">
 					<ListBox ItemsSource="{Binding RecentFiles}" Background="#00000000">
@@ -35,7 +91,18 @@
 					</ListBox>
 				</MenuItem>
 				<Separator/>
-				<MenuItem Header="_Exit"/>
+				<MenuItem Command="{Binding QuitApplicationCommand}">
+					<MenuItem.Header>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="80"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Grid.Column="0">Exit</TextBlock>
+							<TextBlock Grid.Column="1">Alt+F4</TextBlock>
+						</Grid>
+					</MenuItem.Header>
+				</MenuItem>
 			</MenuItem>
 			<MenuItem Header="_Edit">
 				<MenuItem Header="Undo"/>
@@ -56,7 +123,7 @@
 						<RowDefinition/>
 					</Grid.RowDefinitions>
 					<CheckBox Content="Paint Characters" IsChecked="{Binding CanPaintCharacters, Mode=TwoWay}"></CheckBox>
-					<ListBox IsEnabled="{Binding CanPaintCharacters}" Grid.Row="1" ItemsSource="{Binding CharacterList}" ScrollViewer.VerticalScrollBarVisibility="Auto" SelectedIndex="{Binding SelectedCharacterIndex, Mode=TwoWay}">
+					<ListBox IsEnabled="{Binding CanPaintCharacters}" Grid.Row="1" ItemsSource="{Binding CharacterList}" ScrollViewer.VerticalScrollBarVisibility="Auto" SelectedIndex="{Binding SelectedCharacterIndex, Mode=TwoWay}" Cursor="Hand">
 						<ListBox.ItemsPanel>
 							<ItemsPanelTemplate>
 								<UniformGrid Columns="3" VerticalAlignment="Top" HorizontalAlignment="Left"/>
@@ -86,7 +153,7 @@
 				</Grid.RowDefinitions>
 				<Grid Grid.Row="0">
 					<GroupBox Header="Color Palette">
-						<ListBox ItemsSource="{Binding ColorList}" SelectedIndex="{Binding SelectedColorIndex, Mode=TwoWay}">
+						<ListBox ItemsSource="{Binding ColorList}" SelectedIndex="{Binding SelectedColorIndex, Mode=TwoWay}" Cursor="Hand">
 							<ListBox.ItemsPanel>
 								<ItemsPanelTemplate>
 									<UniformGrid Rows="1" HorizontalAlignment="Left"/>
@@ -123,7 +190,7 @@
 				</StackPanel>
 				<ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
 					<Grid Width="{Binding PixelWidth}" Height="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
-						<ListView ItemsSource="{Binding Pixels}" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden" HorizontalContentAlignment="Center" VerticalAlignment="Center">
+						<ListView ItemsSource="{Binding Pixels}" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden" HorizontalContentAlignment="Center" VerticalAlignment="Center" Cursor="Hand">
 							<ListView.ItemsPanel>
 								<ItemsPanelTemplate>
 									<UniformGrid Background="{Binding GridColor}" Columns="{Binding GridWidth}" Rows="{Binding GridHeight}"/>
