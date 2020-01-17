@@ -238,15 +238,18 @@ namespace SpriteEditor.ViewModels
         {
             CharacterList = new ObservableCollection<char>();
             charLookup = new Dictionary<char, byte>();
+            var encoding = Encoding.GetEncoding("437");
+            var space = encoding.GetString(new byte[] { 32 });
+            CharacterList.Add(space[0]);
+            charLookup.Add(space[0], 32);
             for(byte i = 0; i < 255; i++)
             {
                 char c = (char)i;
                 if (char.IsControl(c))
                     continue;
                 if (char.IsWhiteSpace(c))
-                    continue;
-                var e = Encoding.GetEncoding("437");
-                var s = e.GetString(new byte[] { i });
+                    continue;                
+                var s = encoding.GetString(new byte[] { i });
                 charLookup.Add(s[0], i);
                 CharacterList.Add(s[0]);
             }            
@@ -392,6 +395,16 @@ namespace SpriteEditor.ViewModels
             }
         }
 
+        private char InvalidCharacter
+        {
+            get
+            {
+                var e = Encoding.GetEncoding("437");
+                var s = e.GetString(new byte[] { 32 });
+                return s[0];
+            }
+        }
+
         private void ImportArt()
         {
             if (string.IsNullOrEmpty(ImportedArt))
@@ -410,8 +423,16 @@ namespace SpriteEditor.ViewModels
                     if (x >= line.Length)
                         continue;
                     var pixel = Pixels[y * GridWidth + x];
-                    pixel.Character = line[x];
-                    pixel.Color = SelectedColor;
+                    if(charLookup.ContainsKey(line[x]))
+                    {
+                        pixel.Character = line[x];
+                        pixel.Color = SelectedColor;
+                    }
+                    else
+                    {
+                        pixel.Character = InvalidCharacter;
+                        pixel.Color = ColorEntry.FromConsoleColor(ConsoleColor.Black);
+                    }                    
                 }
             }
             ImportedArt = string.Empty;
