@@ -105,11 +105,13 @@ namespace SpriteEditor
             if(z)
             {
                 //Undo
+                context.Undo();
                 return;
             }
             if(y)
             {
                 //Redo
+                context.Redo();
                 return;
             }
 

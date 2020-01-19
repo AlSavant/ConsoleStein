@@ -12,8 +12,6 @@ using System.Windows;
 using System.Windows.Media;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Drawing;
-using System.Windows.Media.Imaging;
 
 namespace SpriteEditor.ViewModels
 {
@@ -223,9 +221,8 @@ namespace SpriteEditor.ViewModels
             {
                 return RecentFiles.Count > 0;
             }
-        }
-                
-        public ObservableCollectionEx<PixelEntry> Pixels { get; set; }         
+        }                
+        public SmartCollection<PixelEntry> Pixels { get; set; }
 
         public SpriteEditorViewModel()
         {
@@ -233,6 +230,8 @@ namespace SpriteEditor.ViewModels
         }
 
         private Dictionary<char, byte> charLookup;
+
+        private History History { get; set; }
 
         public void Setup()
         {
@@ -265,10 +264,10 @@ namespace SpriteEditor.ViewModels
             ColorList[0] = last;
             SelectedCharacter = CharacterList[0];
             SelectedColor = ColorList[0];
-            Pixels = new ObservableCollectionEx<PixelEntry>();
-            Pixels.ItemPropertyChanged += (o, e) => { OnPropertyChanged("Pixels"); };
+            Pixels = new SmartCollection<PixelEntry>();
             OnGridResized();
-
+            History = new History();
+            AddHistoryState("");
             RecentFiles = new ObservableCollection<string>();
             if(Properties.Settings.Default.RecentFiles == null)
             {
@@ -290,16 +289,51 @@ namespace SpriteEditor.ViewModels
             IsDirty = false;
         }
 
+        private void AddHistoryState(string actionName)
+        {
+            if (History == null)
+                return;
+            History.AddState(new HistoryState(actionName, GridWidth, GridHeight, Pixels));
+        }
+
+        public void Undo()
+        {
+            if (!History.CanUndo)
+                return;
+            var state = History.GetPreviousState();
+            ApplyState(state);
+        }
+
+        public void Redo()
+        {
+            if (!History.CanRedo)
+                return;
+            var state = History.GetNextState();
+            ApplyState(state);
+        }
+
+        private void ApplyState(HistoryState state)
+        {
+            gridWidth = state.GridWidth;
+            gridHeight = state.GridHeight;
+            Pixels.Reset(state.GetGridClone());
+            OnPropertyChanged("GridHeight");
+            OnPropertyChanged("GridWidth");
+            OnPropertyChanged("PixelWidth");
+            OnPropertyChanged("Pixels");
+        }
+
         private void OnGridResized()
         {
-            Pixels.Clear();
-
+            var pixels = new List<PixelEntry>(GridHeight * GridWidth);            
             for (int i = 0; i < GridHeight * GridWidth; i++)
             {
-                Pixels.Add(new PixelEntry());
-                Pixels[i].Character = ' ';
-                Pixels[i].Color = ColorEntry.FromConsoleColor(ConsoleColor.Black);
+                pixels.Add(new PixelEntry());
+                pixels[i].Character = ' ';
+                pixels[i].Color = ColorEntry.FromConsoleColor(ConsoleColor.Black);
             }
+            Pixels.Reset(pixels);
+            AddHistoryState("Grid Resized");
             IsDirty = true;
         }
 
@@ -321,11 +355,27 @@ namespace SpriteEditor.ViewModels
         private void SelectPixel(object param)
         {
             PixelEntry pixel = (PixelEntry)param;
+            bool dirtyPixel = false;
             if(CanPaintCharacters)
-                pixel.Character = SelectedCharacter;
-            pixel.Color = SelectedColor;                       
-            OnPropertyChanged("Pixels");
-            IsDirty = true;
+            {
+                if(pixel.Character != SelectedCharacter)
+                {
+                    dirtyPixel = true;
+                    pixel.Character = SelectedCharacter;                    
+                }
+                
+            }
+            if(pixel.Color != SelectedColor)
+            {
+                dirtyPixel = true;
+                pixel.Color = SelectedColor;               
+            }            
+            if(dirtyPixel)
+            {
+                AddHistoryState("Pixel Painted");
+                IsDirty = true;
+            }
+                
         }
 
         private ICommand fillCommand;
@@ -345,13 +395,30 @@ namespace SpriteEditor.ViewModels
 
         private void Fill()
         {
+            bool dirtyFill = false;
             for(int i = 0; i < Pixels.Count; i++)
             {
                 if(CanPaintCharacters)
-                    Pixels[i].Character = SelectedCharacter;
-                Pixels[i].Color = SelectedColor;
+                {
+                    if(Pixels[i].Character != SelectedCharacter)
+                    {
+                        Pixels[i].Character = SelectedCharacter;
+                        dirtyFill = true;
+                    }                    
+                }
+                if(Pixels[i].Color != SelectedColor)
+                {
+                    dirtyFill = true;
+                    Pixels[i].Color = SelectedColor;
+                }
+                
             }
-            IsDirty = true;
+            if(dirtyFill)
+            {
+                AddHistoryState("Fill");
+                IsDirty = true;
+            }
+                
         }
 
         private ICommand clearCommand;
@@ -371,13 +438,30 @@ namespace SpriteEditor.ViewModels
 
         private void Clear()
         {
+            bool dirtyClear = false;
             for (int i = 0; i < Pixels.Count; i++)
             {
                 if(CanPaintCharacters)
-                    Pixels[i].Character = ' ';
-                Pixels[i].Color = ColorEntry.FromConsoleColor(ConsoleColor.Black);
+                {
+                    if(Pixels[i].Character != ' ')
+                    {
+                        dirtyClear = true;
+                        Pixels[i].Character = ' ';
+                    }                    
+                }
+                if(Pixels[i].Color.ConsoleColor != ConsoleColor.Black)
+                {
+                    dirtyClear = true;
+                    Pixels[i].Color = ColorEntry.FromConsoleColor(ConsoleColor.Black);
+                }
+                
             }
-            IsDirty = true;
+            if(dirtyClear)
+            {
+                AddHistoryState("Clear");
+                IsDirty = true;
+            }
+                
         }
 
         private ICommand importArtCommand;
@@ -410,11 +494,11 @@ namespace SpriteEditor.ViewModels
             if (string.IsNullOrEmpty(ImportedArt))
                 return;
             var lines = ImportedArt.Split('\n');
-            GridHeight = lines.Length;
+            gridHeight = lines.Length;
             var ordered = lines.OrderByDescending(x => x.Length);
             int leftPad = lines.Length <= 1 ? 0 : -1;
-            GridWidth = ordered.First().Length + leftPad;
-            OnGridResized();            
+            gridWidth = ordered.First().Length + leftPad;
+            OnGridResized();
             for(int y = 0; y < lines.Length; y++)
             {
                 var line = lines[y];
@@ -434,9 +518,12 @@ namespace SpriteEditor.ViewModels
                         pixel.Color = ColorEntry.FromConsoleColor(ConsoleColor.Black);
                     }                    
                 }
-            }
+            }            
             ImportedArt = string.Empty;
-            OnPropertyChanged("Pixels");
+            OnPropertyChanged("GridHeight");
+            OnPropertyChanged("GridWidth");
+            OnPropertyChanged("PixelWidth");
+            AddHistoryState("Import Art");
             IsDirty = true;
         }
 
@@ -563,8 +650,9 @@ namespace SpriteEditor.ViewModels
             }
             else
             {
-                GridWidth = 20;
-                GridHeight = 20;
+                gridWidth = 20;
+                gridHeight = 20;
+                OnGridResized();
             }            
             ShowGrid = true;
             IsDirty = false;
@@ -593,7 +681,7 @@ namespace SpriteEditor.ViewModels
                 Properties.Settings.Default.RecentFiles.Remove(path);
                 RecentFiles.Remove(path);
                 Properties.Settings.Default.Save();
-                var messageBoxResult = MessageBox.Show("The requested sprite file could not be found at the target location. Removing from list.", "Sprite not found", MessageBoxButton.OK);
+                MessageBox.Show("The requested sprite file could not be found at the target location. Removing from list.", "Sprite not found", MessageBoxButton.OK);
                 OnPropertyChanged("RecentFiles");
                 OnPropertyChanged("CanBrowseRecents");
                 return;
@@ -701,20 +789,20 @@ namespace SpriteEditor.ViewModels
         {
             gridWidth = sprite.Width;
             gridHeight = sprite.Height;
-            Pixels.Clear();
+            var pixels = new List<PixelEntry>(gridWidth * gridHeight);
             for (int i = 0; i < gridWidth * gridHeight; i++)
             {
-                Pixels.Add(new PixelEntry());
+                pixels.Add(new PixelEntry());
                 var e = Encoding.GetEncoding("437");
                 var s = e.GetString(new byte[] { sprite.Characters[i] });
-                Pixels[i].Character = s[0];
-                Pixels[i].Color = ColorEntry.FromConsoleColor((ConsoleColor)sprite.Colors[i]);
+                pixels[i].Character = s[0];
+                pixels[i].Color = ColorEntry.FromConsoleColor((ConsoleColor)sprite.Colors[i]);
             }
+            Pixels.Reset(pixels);
             SupportsTransparency = sprite.IsTransparent;
             OnPropertyChanged("GridHeight");
             OnPropertyChanged("GridWidth");
-            OnPropertyChanged("PixelWidth");
-            OnPropertyChanged("Pixels");
+            OnPropertyChanged("PixelWidth");            
         }
 
         private bool DiscardChanges()
@@ -743,16 +831,6 @@ namespace SpriteEditor.ViewModels
         private void QuitApplication()
         {
             Application.Current.Shutdown();
-        }
-
-        public BitmapSource SaveIcon
-        {
-            get
-            {
-                Icon icon = SystemIcons.WinLogo;
-
-                return System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-            }
-        }
+        }        
     }
 }

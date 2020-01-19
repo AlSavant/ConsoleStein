@@ -4,7 +4,7 @@ using System.Windows.Media;
 
 namespace SpriteEditor.Models
 {
-    public struct ColorEntry
+    public struct ColorEntry : IEquatable<ColorEntry>
     {
         public SolidColorBrush MediaColor { get; set; }
         public ConsoleColor ConsoleColor { get; set; }
@@ -30,6 +30,38 @@ namespace SpriteEditor.Models
 
             }
             return entry;
+        }
+
+        public bool Equals(ColorEntry other)
+        {
+            return Equals(other, this);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+
+            var objectToCompareWith = (ColorEntry)obj;
+            return objectToCompareWith.ConsoleColor == ConsoleColor;
+        }
+
+        public override int GetHashCode()
+        {
+            var calculation = ConsoleColor;
+            return calculation.GetHashCode();
+        }
+
+        public static bool operator ==(ColorEntry c1, ColorEntry c2)
+        {
+            return c1.Equals(c2);
+        }
+
+        public static bool operator !=(ColorEntry c1, ColorEntry c2)
+        {
+            return !c1.Equals(c2);
         }
     }
 }

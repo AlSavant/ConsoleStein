@@ -67,7 +67,9 @@
     <Compile Include="Commands\RelayCommand.cs" />
     <Compile Include="Models\ColorEntry.cs" />
     <Compile Include="Models\ConsoleSprite.cs" />
-    <Compile Include="Models\ObservableCollectionEx.cs" />
+    <Compile Include="Models\History.cs" />
+    <Compile Include="Models\HistoryState.cs" />
+    <Compile Include="Models\SmartCollection.cs" />
     <Compile Include="Models\PixelEntry.cs" />
     <Compile Include="ViewModels\SpriteEditorViewModel.cs" />
     <Compile Include="ViewModels\ViewModel.cs" />

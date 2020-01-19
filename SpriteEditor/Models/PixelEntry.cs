@@ -29,5 +29,13 @@ namespace SpriteEditor.ViewModels
                 SetProperty(ref color, value, "Color");
             }
         }
+
+        public PixelEntry Clone()
+        {
+            var clone = new PixelEntry();
+            clone.Character = Character;
+            clone.Color = Color;
+            return clone;
+        }
     }
 }
