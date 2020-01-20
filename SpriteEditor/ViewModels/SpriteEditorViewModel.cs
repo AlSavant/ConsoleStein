@@ -231,6 +231,22 @@ namespace SpriteEditor.ViewModels
 
         private Dictionary<char, byte> charLookup;
 
+        public string UndoAction
+        {
+            get
+            {
+                return History.UndoAction;
+            }
+        }
+
+        public string RedoAction
+        {
+            get
+            {
+                return History.RedoAction;
+            }
+        }
+
         private History History { get; set; }
 
         public void Setup()
@@ -266,7 +282,7 @@ namespace SpriteEditor.ViewModels
             SelectedColor = ColorList[0];
             Pixels = new SmartCollection<PixelEntry>();
             OnGridResized();
-            History = new History();
+            History = new History(3);
             AddHistoryState("");
             RecentFiles = new ObservableCollection<string>();
             if(Properties.Settings.Default.RecentFiles == null)
@@ -294,6 +310,60 @@ namespace SpriteEditor.ViewModels
             if (History == null)
                 return;
             History.AddState(new HistoryState(actionName, GridWidth, GridHeight, Pixels));
+            OnPropertyChanged("UndoAction");
+            OnPropertyChanged("RedoAction");
+            OnPropertyChanged("CanUndo");
+            OnPropertyChanged("CanRedo");
+        }
+
+        private ICommand undoCommand;
+        public ICommand UndoCommand
+        {
+            get
+            {
+                if (undoCommand == null)
+                {
+                    undoCommand = new RelayCommand(
+                        param => Undo()
+                    );
+                }
+                return undoCommand;
+            }
+        }
+
+        private ICommand redoCommand;
+        public ICommand RedoCommand
+        {
+            get
+            {
+                if (redoCommand == null)
+                {
+                    redoCommand = new RelayCommand(
+                        param => Redo()
+                    );
+                }
+                return redoCommand;
+            }
+        }
+
+        public bool CanUndo
+        {
+            get
+            {
+                if (History == null)
+                    return false;
+                return History.CanUndo;
+            }
+        }
+
+        public bool CanRedo
+        {
+            get
+            {
+                if (History == null)
+                    return false;
+                return History.CanRedo;
+            }
         }
 
         public void Undo()
@@ -321,6 +391,10 @@ namespace SpriteEditor.ViewModels
             OnPropertyChanged("GridWidth");
             OnPropertyChanged("PixelWidth");
             OnPropertyChanged("Pixels");
+            OnPropertyChanged("UndoAction");
+            OnPropertyChanged("RedoAction");
+            OnPropertyChanged("CanUndo");
+            OnPropertyChanged("CanRedo");
         }
 
         private void OnGridResized()
@@ -333,7 +407,7 @@ namespace SpriteEditor.ViewModels
                 pixels[i].Color = ColorEntry.FromConsoleColor(ConsoleColor.Black);
             }
             Pixels.Reset(pixels);
-            AddHistoryState("Grid Resized");
+            AddHistoryState("Resize Grid");
             IsDirty = true;
         }
 
@@ -372,7 +446,7 @@ namespace SpriteEditor.ViewModels
             }            
             if(dirtyPixel)
             {
-                AddHistoryState("Pixel Painted");
+                AddHistoryState("Paint Pixel");
                 IsDirty = true;
             }
                 

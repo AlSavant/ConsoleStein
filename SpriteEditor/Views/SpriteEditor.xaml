@@ -17,7 +17,7 @@
 			<MenuItem Header="_File">
 				<MenuItem Command="{Binding NewSpriteCommand}">
 					<MenuItem.Icon>
-						<Image Source="pack://application:,,,/Resources/document_new.png"></Image>
+						<Image Source="/SpriteEditor;component/Resources/NewFile_16x.png"></Image>
 					</MenuItem.Icon>
 					<MenuItem.Header>
 						<Grid>
@@ -25,14 +25,14 @@
 								<ColumnDefinition Width="80"/>
 								<ColumnDefinition Width="*"/>
 							</Grid.ColumnDefinitions>
-							<TextBlock Grid.Column="0">New</TextBlock>
-							<TextBlock Grid.Column="1">Ctrl+N</TextBlock>
+							<Label Grid.Column="0" Content="New"/>
+							<Label Grid.Column="1" Content="Ctrl+N"/>
 						</Grid>
 					</MenuItem.Header>
 				</MenuItem>
 				<MenuItem Command="{Binding OpenSpriteCommand}">
 					<MenuItem.Icon>
-						<Image Source="pack://application:,,,/Resources/document_open.png"></Image>
+						<Image Source="/SpriteEditor;component/Resources/OpenFolder_16x.png"></Image>
 					</MenuItem.Icon>
 					<MenuItem.Header>
 						<Grid>
@@ -40,15 +40,15 @@
 								<ColumnDefinition Width="80"/>
 								<ColumnDefinition Width="*"/>
 							</Grid.ColumnDefinitions>
-							<TextBlock Grid.Column="0">Open...</TextBlock>
-							<TextBlock Grid.Column="1">Ctrl+O</TextBlock>
+							<Label Grid.Column="0" Content="Open..."/>
+							<Label Grid.Column="1" Content="Ctrl+O"/>
 						</Grid>
 					</MenuItem.Header>
 				</MenuItem>
 				<Separator/>
 				<MenuItem IsEnabled="{Binding CanSave}" Command="{Binding SaveFileCommand}">
 					<MenuItem.Icon>
-						<Image Source="pack://application:,,,/Resources/save.png"></Image>
+						<Image Source="/SpriteEditor;component/Resources/Save_16x.png"></Image>
 					</MenuItem.Icon>
 					<MenuItem.Header>
 						<Grid>
@@ -56,14 +56,14 @@
 								<ColumnDefinition Width="80"/>
 								<ColumnDefinition Width="*"/>
 							</Grid.ColumnDefinitions>
-							<TextBlock Grid.Column="0">Save</TextBlock>
-							<TextBlock Grid.Column="1">Ctrl+S</TextBlock>
+							<Label Grid.Column="0" Content="Save"/>
+							<Label Grid.Column="1" Content="Ctrl+S"/>
 						</Grid>
 					</MenuItem.Header>
 				</MenuItem>
 				<MenuItem IsEnabled="{Binding IsDirty}" Command="{Binding SaveFileWithLocationCommand}">
 					<MenuItem.Icon>
-						<Image Source="pack://application:,,,/Resources/save.png"></Image>
+						<Image Source="/SpriteEditor;component/Resources/Save_16x.png"></Image>
 					</MenuItem.Icon>
 					<MenuItem.Header>
 						<Grid>
@@ -71,8 +71,8 @@
 								<ColumnDefinition Width="80"/>
 								<ColumnDefinition Width="*"/>
 							</Grid.ColumnDefinitions>
-							<TextBlock Grid.Column="0">Save As...</TextBlock>
-							<TextBlock Grid.Column="1">Ctrl+Shift+S</TextBlock>
+							<Label Grid.Column="0" Content="Save As..."/>
+							<Label Grid.Column="1" Content="Ctrl+Shift+S"/>
 						</Grid>
 					</MenuItem.Header>
 				</MenuItem>
@@ -98,15 +98,49 @@
 								<ColumnDefinition Width="80"/>
 								<ColumnDefinition Width="*"/>
 							</Grid.ColumnDefinitions>
-							<TextBlock Grid.Column="0">Exit</TextBlock>
-							<TextBlock Grid.Column="1">Alt+F4</TextBlock>
+							<Label Grid.Column="0" Content="Exit"/>
+							<Label Grid.Column="1" Content="Alt+F4"/>
 						</Grid>
 					</MenuItem.Header>
 				</MenuItem>
 			</MenuItem>
 			<MenuItem Header="_Edit">
-				<MenuItem Header="Undo"/>
-				<MenuItem Header="Redo"/>
+				<MenuItem IsEnabled="{Binding CanUndo}" Command="{Binding UndoCommand}">
+					<MenuItem.Icon>
+						<Image Source="/SpriteEditor;component/Resources/Undo_16x.png"></Image>
+					</MenuItem.Icon>
+					<MenuItem.Header>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="150"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<StackPanel Orientation="Horizontal">
+								<Label Grid.Column="0" Margin="0,0,10,0" Content="Undo"/>
+								<Label Grid.Column="1" Margin="0,0,10,0" Content="{Binding UndoAction}"/>
+							</StackPanel>
+							<Label Grid.Column="1" Content="Ctrl+Z"/>
+						</Grid>
+					</MenuItem.Header>
+				</MenuItem>
+				<MenuItem IsEnabled="{Binding CanRedo}" Command="{Binding RedoCommand}">
+					<MenuItem.Icon>
+						<Image Source="/SpriteEditor;component/Resources/Redo_16x.png"></Image>
+					</MenuItem.Icon>
+					<MenuItem.Header>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="150"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<StackPanel Orientation="Horizontal">
+								<Label Grid.Column="0" Margin="0,0,10,0" Content="Redo"/>
+								<Label Grid.Column="1" Margin="0,0,10,0" Content="{Binding RedoAction}"/>
+							</StackPanel>
+							<Label Grid.Column="1" Content="Ctrl+Y"/>
+						</Grid>
+					</MenuItem.Header>
+				</MenuItem>
 				<Separator/>
 				<MenuItem Header="_Resize Grid"/>
 			</MenuItem>

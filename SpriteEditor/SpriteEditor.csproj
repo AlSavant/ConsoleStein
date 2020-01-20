@@ -108,13 +108,19 @@
     <Resource Include="Resources\editor_icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\save.png" />
+    <Resource Include="Resources\NewFile_16x.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\document_new.png" />
+    <Resource Include="Resources\OpenFolder_16x.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\document_open.png" />
+    <Resource Include="Resources\Redo_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Save_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Undo_16x.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
