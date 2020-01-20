@@ -142,7 +142,15 @@
 					</MenuItem.Header>
 				</MenuItem>
 				<Separator/>
-				<MenuItem Header="_Resize Grid"/>
+				<MenuItem Header="_Grid Size..."/>
+				<MenuItem Header="_Transform">
+					<MenuItem Header="_Rotate 180°"/>
+					<MenuItem Header="_Rotate 90° Clockwise"/>
+					<MenuItem Header="_Rotate 90° Counter Clockwise"/>
+					<Separator/>
+					<MenuItem Header="_Flip Horizontal"/>
+					<MenuItem Header="_Flip Vertical"/>
+				</MenuItem>
 			</MenuItem>
 		</Menu>
 		<Grid Grid.Row="1">
