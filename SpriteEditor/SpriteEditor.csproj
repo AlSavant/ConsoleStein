@@ -71,6 +71,7 @@
     <Compile Include="Models\HistoryState.cs" />
     <Compile Include="Models\SmartCollection.cs" />
     <Compile Include="Models\PixelEntry.cs" />
+    <Compile Include="Util\MatrixUtil.cs" />
     <Compile Include="ViewModels\SpriteEditorViewModel.cs" />
     <Compile Include="ViewModels\ViewModel.cs" />
     <Compile Include="Views\SpriteEditor.xaml.cs">

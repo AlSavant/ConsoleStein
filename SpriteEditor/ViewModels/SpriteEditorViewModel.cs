@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using SpriteEditor.Util;
 
 namespace SpriteEditor.ViewModels
 {
@@ -900,6 +901,130 @@ namespace SpriteEditor.ViewModels
                 }
                 return quitApplicationCommand;
             }
+        }
+
+        private ICommand rotateGrid90CWCommand;
+        public ICommand RotateGrid90CWCommand
+        {
+            get
+            {
+                if (rotateGrid90CWCommand == null)
+                {
+                    rotateGrid90CWCommand = new RelayCommand(
+                        param => RotateGrid90CW()
+                    );
+                }
+                return rotateGrid90CWCommand;
+            }
+        }
+
+        private void RotateGrid90CW()
+        {
+            Pixels.Reset(MatrixUtil.RotateMatrix90CW(Pixels.ToArray(), GridWidth, GridHeight));
+            int w = gridWidth;
+            int h = gridHeight;
+            gridWidth = h;
+            gridHeight = w;            
+            OnPropertyChanged("GridHeight");
+            OnPropertyChanged("GridWidth");
+            OnPropertyChanged("PixelWidth");
+            AddHistoryState("Rotate Grid 90° CW");
+            IsDirty = true;
+        }
+
+        private ICommand rotateGrid90CCWCommand;
+        public ICommand RotateGrid90CCWCommand
+        {
+            get
+            {
+                if (rotateGrid90CCWCommand == null)
+                {
+                    rotateGrid90CCWCommand = new RelayCommand(
+                        param => RotateGrid90CCW()
+                    );
+                }
+                return rotateGrid90CCWCommand;
+            }
+        }
+
+        private void RotateGrid90CCW()
+        {
+            Pixels.Reset(MatrixUtil.RotateMatrix90CCW(Pixels.ToArray(), GridWidth, GridHeight));
+            int w = gridWidth;
+            int h = gridHeight;
+            gridWidth = h;
+            gridHeight = w;
+            OnPropertyChanged("GridHeight");
+            OnPropertyChanged("GridWidth");
+            OnPropertyChanged("PixelWidth");
+            AddHistoryState("Rotate Grid 90° CCW");
+            IsDirty = true;
+        }
+
+        private ICommand rotateGrid180Command;
+        public ICommand RotateGrid180Command
+        {
+            get
+            {
+                if (rotateGrid180Command == null)
+                {
+                    rotateGrid180Command = new RelayCommand(
+                        param => RotateGrid180()
+                    );
+                }
+                return rotateGrid180Command;
+            }
+        }
+
+        private void RotateGrid180()
+        {
+            Pixels.Reset(MatrixUtil.RotateMatrix180(Pixels.ToArray(), GridWidth, GridHeight));            
+            AddHistoryState("Rotate Grid 180°");
+            IsDirty = true;
+        }
+
+        private ICommand flipGridVerticallyCommand;
+        public ICommand FlipGridVerticallyCommand
+        {
+            get
+            {
+                if (flipGridVerticallyCommand == null)
+                {
+                    flipGridVerticallyCommand = new RelayCommand(
+                        param => FlipGridVertically()
+                    );
+                }
+                return flipGridVerticallyCommand;
+            }
+        }
+
+        private void FlipGridVertically()
+        {
+            Pixels.Reset(MatrixUtil.FlipMatrixVertically(Pixels.ToArray(), GridWidth, GridHeight));
+            AddHistoryState("Flip Grid Vertically");
+            IsDirty = true;
+        }
+
+        private ICommand flipGridHorizontallyCommand;
+        public ICommand FlipGridHorizontallyCommand
+        {
+            get
+            {
+                if (flipGridHorizontallyCommand == null)
+                {
+                    flipGridHorizontallyCommand = new RelayCommand(
+                        param => FlipGridHorizontally()
+                    );
+                }
+                return flipGridHorizontallyCommand;
+            }
+        }
+
+        private void FlipGridHorizontally()
+        {
+            Pixels.Reset(MatrixUtil.FlipMatrixHorizontally(Pixels.ToArray(), GridWidth, GridHeight));
+            AddHistoryState("Flip Grid Horizontally");
+            IsDirty = true;
         }
 
         private void QuitApplication()

@@ -144,12 +144,12 @@
 				<Separator/>
 				<MenuItem Header="_Grid Size..."/>
 				<MenuItem Header="_Transform">
-					<MenuItem Header="_Rotate 180°"/>
-					<MenuItem Header="_Rotate 90° Clockwise"/>
-					<MenuItem Header="_Rotate 90° Counter Clockwise"/>
+					<MenuItem Header="_Rotate 180°" Command="{Binding RotateGrid180Command}"/>
+					<MenuItem Header="_Rotate 90° Clockwise" Command="{Binding RotateGrid90CWCommand}"/>
+					<MenuItem Header="_Rotate 90° Counter Clockwise" Command="{Binding RotateGrid90CCWCommand}"/>
 					<Separator/>
-					<MenuItem Header="_Flip Horizontal"/>
-					<MenuItem Header="_Flip Vertical"/>
+					<MenuItem Header="_Flip Horizontal" Command="{Binding FlipGridHorizontallyCommand}"/>
+					<MenuItem Header="_Flip Vertical" Command="{Binding FlipGridVerticallyCommand}"/>
 				</MenuItem>
 			</MenuItem>
 		</Menu>
