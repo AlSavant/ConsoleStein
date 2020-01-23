@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:SpriteEditor"
              StartupUri="Views/SpriteEditor.xaml">
     <Application.Resources>
-         
+		
     </Application.Resources>
 </Application>

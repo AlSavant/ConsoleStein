@@ -8,7 +8,7 @@
         mc:Ignorable="d"
 		Icon="/SpriteEditor;component/Resources/editor_icon.png"
         Title="Sprite Editor" Height="600" Width="1000" Name="SpriteEditor" KeyDown="SpriteEditor_KeyDown">
-    <Grid>
+	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="20"/>
 			<RowDefinition/>
@@ -142,7 +142,7 @@
 					</MenuItem.Header>
 				</MenuItem>
 				<Separator/>
-				<MenuItem Header="_Grid Size..."/>
+				<MenuItem Header="_Grid Size..." Command="{Binding OpenCanvasDialogCommand}"/>
 				<MenuItem Header="_Transform">
 					<MenuItem Header="_Rotate 180°" Command="{Binding RotateGrid180Command}"/>
 					<MenuItem Header="_Rotate 90° Clockwise" Command="{Binding RotateGrid90CWCommand}"/>

@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using SpriteEditor.Util;
+using SpriteEditor.Views;
 
 namespace SpriteEditor.ViewModels
 {
@@ -1025,6 +1026,30 @@ namespace SpriteEditor.ViewModels
             Pixels.Reset(MatrixUtil.FlipMatrixHorizontally(Pixels.ToArray(), GridWidth, GridHeight));
             AddHistoryState("Flip Grid Horizontally");
             IsDirty = true;
+        }
+
+        private ICommand openCanvasDialogCommand;
+        public ICommand OpenCanvasDialogCommand
+        {
+            get
+            {
+                if (openCanvasDialogCommand == null)
+                {
+                    openCanvasDialogCommand = new RelayCommand(
+                        param => OpenCanvasDialog()
+                    );
+                }
+                return openCanvasDialogCommand;
+            }
+        }
+
+        private void OpenCanvasDialog()
+        {
+            var view = new ScaleCanvasView();
+            view.ShowDialog();
+            var viewModel = (ScaleCanvasViewModel)view.DataContext;
+            if (viewModel == null)
+                return;
         }
 
         private void QuitApplication()

@@ -56,6 +56,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Views\ScaleCanvasView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\SpriteEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -72,8 +76,12 @@
     <Compile Include="Models\SmartCollection.cs" />
     <Compile Include="Models\PixelEntry.cs" />
     <Compile Include="Util\MatrixUtil.cs" />
+    <Compile Include="ViewModels\ScaleCanvasViewModel.cs" />
     <Compile Include="ViewModels\SpriteEditorViewModel.cs" />
     <Compile Include="ViewModels\ViewModel.cs" />
+    <Compile Include="Views\ScaleCanvasView.xaml.cs">
+      <DependentUpon>ScaleCanvasView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SpriteEditor.xaml.cs">
       <DependentUpon>SpriteEditor.xaml</DependentUpon>
       <SubType>Code</SubType>
