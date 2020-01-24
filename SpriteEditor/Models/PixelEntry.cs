@@ -4,6 +4,17 @@ namespace SpriteEditor.ViewModels
 {
     public class PixelEntry : ViewModel
     {
+        public static PixelEntry Default
+        {
+            get
+            {
+                var entry = new PixelEntry();
+                entry.Character = ' ';
+                entry.Color = ColorEntry.FromConsoleColor(System.ConsoleColor.Black);
+                return entry;
+            }
+        }
+
         private char character;
         public char Character
         {

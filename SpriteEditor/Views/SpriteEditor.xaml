@@ -217,19 +217,15 @@
 						</ListBox>
 					</GroupBox>
 				</Grid>
-				<StackPanel Orientation="Horizontal" Grid.Row="1">
-					<Label>Width</Label>
-					<TextBox Width="30" Height="15" Text="{Binding GridWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-					<Label>Height</Label>
-					<TextBox Width="30" Height="15" Text="{Binding GridHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+				<DockPanel Grid.Row="1">
 					<CheckBox Content="Show Grid" Margin="5,5,5,5" IsChecked="{Binding ShowGrid}"></CheckBox>
 					<Button Width="40" Margin="5,5,5,5" FontSize="9" Content="Fill" Command="{Binding Path=FillCommand}"/>
 					<Button Width="40" Margin="2,5,5,5" FontSize="9" Content="Clear" Command="{Binding Path=ClearCommand}"/>
 					<CheckBox Content="Is Transparent" Margin="5,5,0,5" IsChecked="{Binding SupportsTransparency}"></CheckBox>
-					<Label Content="ASCII Art" Margin="5,0,0,0"/>
-					<TextBox MaxLines="1" Width="200" Margin="0,5,0,5" Text="{Binding ImportedArt, Mode=TwoWay}" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True"/>
-					<Button Content="Import" Margin="5,5,5,5" FontSize="9" Width="50" Command="{Binding Path=ImportArtCommand}"></Button>
-				</StackPanel>
+					<Button DockPanel.Dock="Right" Content="Import" Margin="5,5,5,5" FontSize="9" Width="50" Command="{Binding Path=ImportArtCommand}"></Button>
+					<TextBox DockPanel.Dock="Right" HorizontalAlignment="Right" MaxLines="1" Width="200" Margin="0,5,0,5" Text="{Binding ImportedArt, Mode=TwoWay}" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True"/>
+					<Label HorizontalAlignment="Right" DockPanel.Dock="Right" Content="ASCII Art" Margin="5,0,0,0"/>
+				</DockPanel>
 				<ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
 					<Grid Width="{Binding PixelWidth}" Height="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
 						<ListView ItemsSource="{Binding Pixels}" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden" HorizontalContentAlignment="Center" VerticalAlignment="Center" Cursor="Hand">

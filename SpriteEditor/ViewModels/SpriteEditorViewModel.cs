@@ -32,8 +32,7 @@ namespace SpriteEditor.ViewModels
             set
             {                
                 if(SetProperty(ref gridWidth, value, "GridWidth"))
-                {
-                    OnGridResized();
+                {                    
                     OnPropertyChanged("PixelWidth");
                 }
             }
@@ -47,10 +46,7 @@ namespace SpriteEditor.ViewModels
             }
             set
             {
-                if(SetProperty(ref gridHeight, value, "GridHeight"))
-                {
-                    OnGridResized();
-                }
+                SetProperty(ref gridHeight, value, "GridHeight");
             }
         }
 
@@ -404,9 +400,7 @@ namespace SpriteEditor.ViewModels
             var pixels = new List<PixelEntry>(GridHeight * GridWidth);            
             for (int i = 0; i < GridHeight * GridWidth; i++)
             {
-                pixels.Add(new PixelEntry());
-                pixels[i].Character = ' ';
-                pixels[i].Color = ColorEntry.FromConsoleColor(ConsoleColor.Black);
+                pixels.Add(PixelEntry.Default);                
             }
             Pixels.Reset(pixels);
             AddHistoryState("Resize Grid");
@@ -1049,9 +1043,27 @@ namespace SpriteEditor.ViewModels
             var viewModel = (ScaleCanvasViewModel)view.DataContext;
             viewModel.Setup(GridWidth, GridHeight);
             view.ShowDialog();
-           
-            if (viewModel == null)
+            if (!viewModel.ApplyChanges)
                 return;
+            if (GridWidth == viewModel.GridWidth && GridHeight == viewModel.GridHeight)
+                return;
+            int x = viewModel.PivotIndex % 3;
+            int y = viewModel.PivotIndex / 3;
+            Vector2Int normalizedPivot = new Vector2Int(x, y);            
+            var newPixels = MatrixUtil.ResizeMatrix(Pixels.ToArray(), GridWidth, GridHeight, viewModel.GridWidth, viewModel.GridHeight, normalizedPivot);
+            for(int i = 0; i < newPixels.Length; i++)
+            {
+                if (newPixels[i] == null)
+                    newPixels[i] = PixelEntry.Default;
+            }
+            gridWidth = viewModel.GridWidth;
+            gridHeight = viewModel.GridHeight;
+            Pixels.Reset(newPixels);            
+            OnPropertyChanged("GridHeight");
+            OnPropertyChanged("GridWidth");
+            OnPropertyChanged("PixelWidth");
+            AddHistoryState("Resize Grid");
+            IsDirty = true;
         }
 
         private void QuitApplication()

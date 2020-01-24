@@ -69,6 +69,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Commands\RelayCommand.cs" />
+    <Compile Include="Models\Class1.cs" />
     <Compile Include="Models\ColorEntry.cs" />
     <Compile Include="Models\ConsoleSprite.cs" />
     <Compile Include="Models\History.cs" />

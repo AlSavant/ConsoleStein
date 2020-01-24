@@ -1,4 +1,7 @@
-﻿namespace SpriteEditor.Util
+﻿using SpriteEditor.Models;
+using System;
+
+namespace SpriteEditor.Util
 {
     public static class MatrixUtil
     {
@@ -85,6 +88,70 @@
 
             }
             return dest;
-        }       
+        }
+
+        public static T[] ResizeMatrix<T>(T[] matrix, int matrixWidth, int matrixHeight, int newWidth, int newHeight, Vector2Int normalizedPivot)
+        {
+            T[] dest = new T[newWidth * newHeight];
+            int oldHalfWidth = matrixWidth / 2;
+            int oldHalfHeight = matrixHeight / 2;
+            int newHalfWidth = newWidth / 2;
+            int newHalfHeight = newHeight / 2;
+            for (int i = 0; i < matrix.Length; i++)
+            {
+                int oldX = i % matrixWidth;
+                int oldY = i / matrixWidth;
+
+                if(newWidth < matrixWidth)
+                {
+                    switch (normalizedPivot.x)
+                    {
+                        case -1:
+                            if (oldX > newWidth)
+                                continue;
+                            break;
+
+                        case 0:
+                            if (oldX > Math.Abs(oldHalfWidth - newHalfWidth))
+                                continue;
+                            break;
+
+                        case 1:
+                            if (oldX > Math.Abs(matrixWidth - newWidth))
+                                continue;
+                            break;
+                    }
+                }
+
+                if (newHeight < matrixHeight)
+                {
+                    switch (normalizedPivot.y)
+                    {
+                        case -1:
+                            if (oldY > newHeight)
+                                continue;
+                            break;
+
+                        case 0:
+                            if (oldY > Math.Abs(oldHalfHeight - newHalfHeight))
+                                continue;
+                            break;
+
+                        case 1:
+                            if (oldY > Math.Abs(matrixHeight - newHeight))
+                                continue;
+                            break;
+                    }
+                }
+
+
+                //int newY = matrixWidth - oldX - 1;
+                //int newX = oldY;
+
+                //dest[newY * matrixHeight + newX] = matrix[oldY * matrixWidth + oldX];
+
+            }
+            return dest;
+        }
     }
 }
