@@ -5,8 +5,119 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SpriteEditor.Views"
         mc:Ignorable="d"
-        Title="ScaleCanvasView" Height="450" Width="800">
+        Title="Resize Grid" Height="290" Width="320" ResizeMode="NoResize">
     <Grid>
-        
-    </Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="250"/>
+			<ColumnDefinition/>
+		</Grid.ColumnDefinitions>
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="80"/>
+				<RowDefinition/>
+			</Grid.RowDefinitions>
+			<GroupBox Header="Current Size">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition/>
+						<RowDefinition/>
+					</Grid.RowDefinitions>
+					<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+						<Label Content="Width:" Margin="0,0,15,0"/>
+						<Label Content="{Binding CurrentWidth}" Margin="0,0,5,0"/>
+						<Label Content="pixels"/>
+					</StackPanel>
+					<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
+						<Label Content="Height:" Margin="0,0,15,0"/>
+						<Label Content="{Binding CurrentHeight}" Margin="0,0,5,0"/>
+						<Label Content="pixels"/>
+					</StackPanel>
+				</Grid>
+			</GroupBox>
+			<GroupBox Grid.Row="1" Header="New Size">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="55"/>
+						<RowDefinition/>
+					</Grid.RowDefinitions>
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition/>
+							<RowDefinition/>
+						</Grid.RowDefinitions>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+							</Grid.ColumnDefinitions>
+							<Label HorizontalAlignment="Right">Width:</Label>
+							<TextBox Grid.Column="1" HorizontalAlignment="Left" Width="50" Margin="5,5,5,5"  Text="{Binding GridWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+						</Grid>
+						<Grid Grid.Row="1">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+							</Grid.ColumnDefinitions>
+							<Label HorizontalAlignment="Right">Height:</Label>
+							<TextBox Grid.Column="1" HorizontalAlignment="Left" Width="50" Margin="5,5,5,5" Text="{Binding GridWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+						</Grid>
+					</Grid>
+					<Grid Grid.Row="1">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition/>
+							<ColumnDefinition/>
+						</Grid.ColumnDefinitions>
+						<Label Content="Anchor:" HorizontalAlignment="Right"/>
+						<ListView Grid.Column="1" HorizontalAlignment="Left" Width="91" Height="91" VerticalAlignment="Top" Padding ="-1,-1,0,0" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden" BorderThickness="0">
+							<ListView.ItemsPanel>
+								<ItemsPanelTemplate>
+									<UniformGrid Columns="3" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+								</ItemsPanelTemplate>
+							</ListView.ItemsPanel>
+							<ListView.ItemTemplate>
+								<DataTemplate>
+									<ListViewItem Width="30" Height="30" HorizontalAlignment="Left" BorderBrush="Black" BorderThickness="1" Margin="-1,-1,0,0">
+										<Label Padding="0" Width="28" Height="30" HorizontalContentAlignment="Center" VerticalAlignment="Center" Content="{Binding}" FontSize="20"/>
+									</ListViewItem>
+								</DataTemplate>
+							</ListView.ItemTemplate>
+							<ListViewItem Padding="-1,-1,0,0" Width="30" Height="30" HorizontalAlignment="Left" BorderBrush="Black">
+								<Label Padding="0" Width="28" Height="30" HorizontalContentAlignment="Center" VerticalAlignment="Center" Content="↖" FontSize="20"/>
+							</ListViewItem>
+							<ListViewItem Padding="-1,-1,0,0" Width="30" Height="30" HorizontalAlignment="Left" BorderBrush="Black">
+								<Label Padding="0" Width="28" Height="30" HorizontalContentAlignment="Center" VerticalAlignment="Center" Content="↑" FontSize="20"/>
+							</ListViewItem>
+							<ListViewItem Padding="-1,-1,0,0" Width="30" Height="30" HorizontalAlignment="Left" BorderBrush="Black">
+								<Label Padding="0" Width="28" Height="30" HorizontalContentAlignment="Center" VerticalAlignment="Center" Content="↗" FontSize="20"/>
+							</ListViewItem>
+							<ListViewItem Padding="-1,-1,0,0" Width="30" Height="30" HorizontalAlignment="Left" BorderBrush="Black">
+								<Label Padding="0" Width="28" Height="30" HorizontalContentAlignment="Center" VerticalAlignment="Center" Content="←" FontSize="20"/>
+							</ListViewItem>
+							<ListViewItem Padding="-1,-1,0,0" Width="30" Height="30" HorizontalAlignment="Left" BorderBrush="Black">
+								<Label Padding="0" Width="28" Height="30" HorizontalContentAlignment="Center" VerticalAlignment="Center" Content="•" FontSize="20"/>
+							</ListViewItem>
+							<ListViewItem Padding="-1,-1,0,0" Width="30" Height="30" HorizontalAlignment="Left" BorderBrush="Black">
+								<Label Padding="0" Width="28" Height="30" HorizontalContentAlignment="Center" VerticalAlignment="Center" Content="→" FontSize="20"/>
+							</ListViewItem>
+							<ListViewItem Padding="-1,-1,0,0" Width="30" Height="30" HorizontalAlignment="Left" BorderBrush="Black">
+								<Label Padding="0" Width="28" Height="30" HorizontalContentAlignment="Center" VerticalAlignment="Center" Content="↙" FontSize="20"/>
+							</ListViewItem>
+							<ListViewItem Padding="-1,-1,0,0" Width="30" Height="30" HorizontalAlignment="Left" BorderBrush="Black">
+								<Label Padding="0" Width="28" Height="30" HorizontalContentAlignment="Center" VerticalAlignment="Center" Content="↓" FontSize="20"/>
+							</ListViewItem>
+							<ListViewItem Padding="-1,-1,0,0" Width="30" Height="30" HorizontalAlignment="Left" BorderBrush="Black">
+								<Label Padding="0" Width="28" Height="30" HorizontalContentAlignment="Center" VerticalAlignment="Center" Content="↘" FontSize="20"/>
+							</ListViewItem>
+						</ListView>
+					</Grid>
+				</Grid>
+			</GroupBox>
+		</Grid>
+		<Grid Grid.Column="1">
+			<StackPanel Orientation="Vertical">
+				<Button Margin="5,5,5,5" Content="OK"/>
+				<Button Margin="5,5,5,5" Content="Cancel"/>
+			</StackPanel>
+		</Grid>
+	</Grid>
 </Window>

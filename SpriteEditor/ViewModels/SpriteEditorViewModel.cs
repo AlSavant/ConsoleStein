@@ -1046,8 +1046,10 @@ namespace SpriteEditor.ViewModels
         private void OpenCanvasDialog()
         {
             var view = new ScaleCanvasView();
-            view.ShowDialog();
             var viewModel = (ScaleCanvasViewModel)view.DataContext;
+            viewModel.Setup(GridWidth, GridHeight);
+            view.ShowDialog();
+           
             if (viewModel == null)
                 return;
         }
