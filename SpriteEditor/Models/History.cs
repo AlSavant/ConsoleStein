@@ -40,7 +40,6 @@ namespace SpriteEditor.Models
             if (!CanUndo)
                 return default;
             Index--;
-            System.Console.WriteLine(States[Index].StateName);
             return States[Index];
 
         }
@@ -50,7 +49,6 @@ namespace SpriteEditor.Models
             if (!CanRedo)
                 return default;
             Index++;
-            System.Console.WriteLine(States[Index].StateName);
             return States[Index];
         }
 

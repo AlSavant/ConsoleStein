@@ -39,7 +39,7 @@ namespace SpriteEditor.ViewModels
         {
             get
             {
-                return currentWidth;
+                return currentHeight;
             }
             set
             {

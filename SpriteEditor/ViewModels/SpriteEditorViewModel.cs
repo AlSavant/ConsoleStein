@@ -564,10 +564,10 @@ namespace SpriteEditor.ViewModels
             if (string.IsNullOrEmpty(ImportedArt))
                 return;
             var lines = ImportedArt.Split('\n');
-            gridHeight = lines.Length;
+            GridHeight = lines.Length;
             var ordered = lines.OrderByDescending(x => x.Length);
             int leftPad = lines.Length <= 1 ? 0 : -1;
-            gridWidth = ordered.First().Length + leftPad;
+            GridWidth = ordered.First().Length + leftPad;
             OnGridResized();
             for(int y = 0; y < lines.Length; y++)
             {

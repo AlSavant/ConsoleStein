@@ -93,63 +93,40 @@ namespace SpriteEditor.Util
         public static T[] ResizeMatrix<T>(T[] matrix, int matrixWidth, int matrixHeight, int newWidth, int newHeight, Vector2Int normalizedPivot)
         {
             T[] dest = new T[newWidth * newHeight];
-            int oldHalfWidth = matrixWidth / 2;
-            int oldHalfHeight = matrixHeight / 2;
+            int pivotX = 0;
+            int pivotY = 0;
+            int halfWidth = matrixWidth / 2;
+            int halfHeight = matrixHeight / 2;
             int newHalfWidth = newWidth / 2;
             int newHalfHeight = newHeight / 2;
-            for (int i = 0; i < matrix.Length; i++)
+            if (normalizedPivot.x == 1)
             {
-                int oldX = i % matrixWidth;
-                int oldY = i / matrixWidth;
+                pivotX = halfWidth - newHalfWidth;
+            }
+            if(normalizedPivot.x == 2)
+            {
+                pivotX = matrixWidth - newWidth;
+            }
+            if (normalizedPivot.y == 1)
+            {
+                pivotY = halfHeight - newHalfHeight;
+            }
+            if (normalizedPivot.y == 2)
+            {
+                pivotY = matrixHeight - newHeight;
+            }
+            for (int i = 0; i < dest.Length; i++)
+            {
+                int newX = i % newWidth;
+                int newY = i / newWidth;
 
-                if(newWidth < matrixWidth)
-                {
-                    switch (normalizedPivot.x)
-                    {
-                        case -1:
-                            if (oldX > newWidth)
-                                continue;
-                            break;
-
-                        case 0:
-                            if (oldX > Math.Abs(oldHalfWidth - newHalfWidth))
-                                continue;
-                            break;
-
-                        case 1:
-                            if (oldX > Math.Abs(matrixWidth - newWidth))
-                                continue;
-                            break;
-                    }
-                }
-
-                if (newHeight < matrixHeight)
-                {
-                    switch (normalizedPivot.y)
-                    {
-                        case -1:
-                            if (oldY > newHeight)
-                                continue;
-                            break;
-
-                        case 0:
-                            if (oldY > Math.Abs(oldHalfHeight - newHalfHeight))
-                                continue;
-                            break;
-
-                        case 1:
-                            if (oldY > Math.Abs(matrixHeight - newHeight))
-                                continue;
-                            break;
-                    }
-                }
-
-
-                //int newY = matrixWidth - oldX - 1;
-                //int newX = oldY;
-
-                //dest[newY * matrixHeight + newX] = matrix[oldY * matrixWidth + oldX];
-
+                int oldX = pivotX + newX;
+                if (oldX < 0 || oldX >= matrixWidth)
+                    continue;
+                int oldY = pivotY + newY;
+                if (oldY < 0 || oldY >= matrixHeight)
+                    continue;
+                dest[newY * newWidth + newX] = matrix[oldY * matrixWidth + oldX];                
             }
             return dest;
         }
