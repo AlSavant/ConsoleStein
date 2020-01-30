@@ -1,4 +1,5 @@
 ﻿using System;
+using ConsoleStein.Maths;
 
 namespace ConsoleStein.Rendering
 {
@@ -19,6 +20,16 @@ namespace ConsoleStein.Rendering
             Characters = characters;
             Colors = colors;
             IsTransparent = isTransparent;
+        }
+
+        public byte[] SamplePixel(Vector2 uv)
+        {
+            int x = (int)(uv.x * Width);
+            int y = (int)(uv.y * Height);
+            int index = y * Width + x;
+            if (index < 0 || index >= Characters.Length || index >= Colors.Length)
+                return null;
+            return new byte[] { Characters[index], Colors[index] };
         }
     }
 }

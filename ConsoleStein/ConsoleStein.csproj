@@ -61,9 +61,13 @@
     <Compile Include="Rendering\ConsoleSprite.cs" />
     <Compile Include="Rendering\RenderingSystem.cs" />
     <Compile Include="Time\TimeSystem.cs" />
+    <Compile Include="Util\ConsoleSpriteConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <Content Include="Resources\Textures\brick_wall.csp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

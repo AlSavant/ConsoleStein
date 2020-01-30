@@ -7,6 +7,7 @@ namespace ConsoleStein.Maths
         public float x;
         public float y;
 
+        public static Vector2 zero { get; private set; } = new Vector2(0f, 0f);
         public static Vector2 forward { get; private set; } = new Vector2(0f, 1f);
         public static Vector2 back { get; private set; } = new Vector2(0f, -1f);
         public static Vector2 right { get; private set; } = new Vector2(1f, 0f);

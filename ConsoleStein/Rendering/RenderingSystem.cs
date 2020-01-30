@@ -5,9 +5,10 @@ using Microsoft.Win32.SafeHandles;
 using ConsoleStein.Input;
 using ConsoleStein.Time;
 using ConsoleStein.Maths;
+using ConsoleStein.Util;
 using System.Collections.Generic;
-using System.Linq;
 using ConsoleStein.Components;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace ConsoleStein.Rendering
 {
@@ -44,6 +45,8 @@ namespace ConsoleStein.Rendering
 
         private List<CameraComponent> Components { get; set; }
 
+        private ConsoleSprite wallSprite { get; set; }
+
         public void Setup(InputSystem inputSystem)
         {
             this.inputSystem = inputSystem;
@@ -78,15 +81,25 @@ namespace ConsoleStein.Rendering
 
             Components = new List<CameraComponent>();
             var camera = CreateCamera();
-            camera.ViewPort = new Rect(0f, 0f, 0.5f, 0.5f);
+            camera.ViewPort = new Rect(0f, 0f, 1f, 1f);
             camera.Entity.GetComponent<TransformComponent>().position = new Vector2(8f, 5f);
 
             var camera2 = CreateCamera();
             camera2.ViewPort = new Rect(0.5f, 0.5f, 0.5f, 0.5f);
             camera2.Entity.GetComponent<TransformComponent>().position = new Vector2(8f, 5f);
             Components.Add(camera);
-            Components.Add(camera2);
+            //Components.Add(camera2);
 
+            var path = AppDomain.CurrentDomain.BaseDirectory;
+            path += "/Resources/Textures/brick_wall.csp";
+            if(File.Exists(path))
+            {
+                var formatter = new BinaryFormatter();
+                formatter.Binder = new ConsoleSpriteConverter();
+                var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
+                wallSprite = (ConsoleSprite)formatter.Deserialize(stream);
+                stream.Close();
+            }            
             UpdateCharBuffer();
         }
 
@@ -135,7 +148,7 @@ namespace ConsoleStein.Rendering
                 }
             }
 
-            transform = Components[1].Entity.GetComponent<TransformComponent>();
+            /*transform = Components[1].Entity.GetComponent<TransformComponent>();
             if (inputSystem.GetKey(EKeyCode.Left))
             {
                 transform.rotation -= 0.5f * TimeSystem.DeltaTime;
@@ -163,7 +176,7 @@ namespace ConsoleStein.Rendering
                 {
                     transform.Translate(transform.forward, TimeSystem.DeltaTime);
                 }
-            }
+            }*/
 
             var width = (short)Console.WindowWidth;
             var height = (short)Console.WindowHeight;
@@ -186,11 +199,11 @@ namespace ConsoleStein.Rendering
                     float angle = cameraTransform.rotation - camera.FieldOfView / 2f + (x - viewX) / (float)ScreenWidth * camera.FieldOfView;
                     float dist = 0f;
                     bool hitWall = false;
-                    bool hitBoundary = false;
-                    short wallColor = 0;
+
                     float farClip = Math.Min(camera.FarClippingDistance, 16);
 
                     Vector2 eyeVec = new Vector2((float)Math.Sin(angle), (float)Math.Cos(angle));
+                    Vector2 uv = Vector2.zero;
                     while (!hitWall && dist < farClip)
                     {
                         dist += 0.1f;
@@ -207,42 +220,37 @@ namespace ConsoleStein.Rendering
                         {
                             hitWall = true;
 
-                            List<Vector2> p = new List<Vector2>();
-                            for (int j = 0; j < 2; j++)
+                            Vector2 blockMid = new Vector2(testX + 0.5f, testY + 0.5f);
+                            Vector2 testPoint = new Vector2
+                                (
+                                transform.position.x + eyeVec.x * dist,
+                                transform.position.y + eyeVec.y * dist
+                                );
+
+                            float testAngle = (float)Math.Atan2(testPoint.y - blockMid.y, testPoint.x - blockMid.x);
+                            
+                            if(testAngle >= -Math.PI * 0.25f && testAngle < Math.PI * 0.25f)
                             {
-                                for (int k = 0; k < 2; k++)
-                                {
-                                    Vector2 vec = new Vector2
-                                        (
-                                            (float)testX + j - cameraTransform.position.x,
-                                            (float)testY + k - cameraTransform.position.y
-                                        );
-                                    float magnitude = vec.magnitude;
-                                    float dot = Vector2.Dot(eyeVec, vec);
-                                    p.Add(new Vector2(magnitude, dot));
-                                }
+                                uv.x = testPoint.y - testY;
                             }
-                            p = p.OrderBy(v => v.x).ToList();
-
-                            float bound = 0.005f;
-                            if ((float)Math.Acos(p[0].y) < bound)
-                                hitBoundary = true;
-                            if ((float)Math.Acos(p[1].y) < bound)
-                                hitBoundary = true;
-                            if ((float)Math.Acos(p[2].y) < bound)
-                                hitBoundary = true;
-
-                            wallColor = GetWallColor(Map[testY * 16 + testX]);
+                            if(testAngle >= Math.PI * 0.25f && testAngle < Math.PI * 0.75f)
+                            {
+                                uv.x = testPoint.x - testX;
+                            }
+                            if(testAngle < -Math.PI * 0.25f && testAngle >= -Math.PI * 0.75f)
+                            {
+                                uv.x = testPoint.x - testX;
+                            }
+                            if(testAngle >= Math.PI * 0.75f || testAngle < -Math.PI * 0.75f)
+                            {
+                                uv.x = testPoint.y - testY;
+                            }
                         }
                     }
 
                     int ceiling = (int)((viewHeight / 2f) - viewHeight / dist);
                     int floor = viewHeight - ceiling;
-
-                    byte wallShade = GetWallShade(dist, farClip);
-
-                    if (hitBoundary)
-                        wallShade = (byte)' ';
+                    
                     for (int y = viewY; y < viewY + viewHeight; y++)
                     {
                         byte floorShade = GetFloorShade(y - viewY, viewHeight);
@@ -254,9 +262,17 @@ namespace ConsoleStein.Rendering
                         }
                         else if (y > ceiling + viewY && y <= floor + viewY)
                         {
-                            CharBuffer[index].Attributes = wallColor;
-                            CharBuffer[index].Char.AsciiChar = wallShade;
-                            CharBuffer[index].Char.UnicodeChar = (char)wallShade;
+                            uv.y = (y - (float)ceiling) / (floor + 1 - (float)ceiling);
+                            
+                            if(wallSprite != null)
+                            {
+                                var pixel = wallSprite.SamplePixel(uv);
+                                if(pixel != null)
+                                {
+                                    CharBuffer[index].Attributes = pixel[1];
+                                    CharBuffer[index].Char.AsciiChar = pixel[0];
+                                }
+                            }
                         }
                         else
                         {
@@ -297,29 +313,7 @@ namespace ConsoleStein.Rendering
         {
             CharBuffer = new CharInfo[ScreenWidth * ScreenHeight];
             bufferRect = new SmallRect() { Left = 0, Top = 0, Right = ScreenWidth, Bottom = ScreenHeight };
-        }
-
-        private byte GetWallShade(float dist, float clippingDistance)
-        {
-            if(dist <= clippingDistance / 4f)
-            {
-                return 219; 
-            }
-            if(dist < clippingDistance / 3f)
-            {
-                return 178;
-            }
-            if(dist < clippingDistance / 2f)
-            {
-                return 177;
-            }
-            if(dist < clippingDistance)
-            {
-                return 176;
-            }
-            return (byte)' ';
-            
-        }
+        }        
 
         private byte GetFloorShade(int y, short viewHeight)
         {
@@ -380,12 +374,6 @@ namespace ConsoleStein.Rendering
                     return 218;
             }
             return 94;
-        }
-
-        private short GetWallColor(char code)
-        {
-            
-            return (short)((byte)code - 65);
         }
     }    
 }
