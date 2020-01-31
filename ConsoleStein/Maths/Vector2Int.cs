@@ -1,6 +1,8 @@
-﻿namespace ConsoleStein.Maths
+﻿using System;
+
+namespace ConsoleStein.Maths
 {
-    public struct Vector2Int
+    public struct Vector2Int : IEquatable<Vector2Int>
     {
         public int x;
         public int y;
@@ -40,5 +42,20 @@
         {
             return new Vector2(v1.x / f, v1.y / f);
         }
+
+        public static bool operator ==(Vector2Int v1, Vector2Int v2)
+        {
+            return v1.Equals(v2);
+        }
+
+        public static bool operator !=(Vector2Int v1, Vector2Int v2)
+        {
+            return !v1.Equals(v2);
+        }
+
+        public bool Equals(Vector2Int vec)
+        {
+            return x == vec.x && y == vec.y;
+        }      
     }
 }

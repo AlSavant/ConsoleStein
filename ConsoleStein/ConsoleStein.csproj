@@ -60,8 +60,9 @@
     <Compile Include="Rendering\ConsoleInterop.cs" />
     <Compile Include="Rendering\ConsoleSprite.cs" />
     <Compile Include="Rendering\RenderingSystem.cs" />
+    <Compile Include="Resources\ResourcesSystem.cs" />
     <Compile Include="Time\TimeSystem.cs" />
-    <Compile Include="Util\ConsoleSpriteConverter.cs" />
+    <Compile Include="Util\BinaryConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

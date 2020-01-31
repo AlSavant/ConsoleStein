@@ -5,10 +5,9 @@ using Microsoft.Win32.SafeHandles;
 using ConsoleStein.Input;
 using ConsoleStein.Time;
 using ConsoleStein.Maths;
-using ConsoleStein.Util;
+using ConsoleStein.Resources;
 using System.Collections.Generic;
 using ConsoleStein.Components;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace ConsoleStein.Rendering
 {
@@ -38,8 +37,7 @@ namespace ConsoleStein.Rendering
         private string Map { get; set; }
         private string DisplayMap { get; set; }
 
-        public short ScreenWidth { get; set; }
-        public short ScreenHeight { get; set; }
+        public Vector2Int ScreenSize { get; set; }        
 
         private InputSystem inputSystem;
 
@@ -47,7 +45,7 @@ namespace ConsoleStein.Rendering
 
         private ConsoleSprite wallSprite { get; set; }
 
-        public void Setup(InputSystem inputSystem)
+        public void Setup(InputSystem inputSystem, ResourcesSystem resourcesSystem)
         {
             this.inputSystem = inputSystem;
             Handle = CreateFile("CONOUT$", 0x40000000, 2, IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero);
@@ -76,8 +74,7 @@ namespace ConsoleStein.Rendering
             DisplayMap += "#              #";
             DisplayMap += "#              #";
             DisplayMap += "################";
-            ScreenWidth = (short)Console.WindowWidth;
-            ScreenHeight = (short)Console.WindowHeight;
+            ScreenSize = new Vector2Int(Console.WindowWidth, Console.WindowHeight);
 
             Components = new List<CameraComponent>();
             var camera = CreateCamera();
@@ -90,16 +87,7 @@ namespace ConsoleStein.Rendering
             Components.Add(camera);
             //Components.Add(camera2);
 
-            var path = AppDomain.CurrentDomain.BaseDirectory;
-            path += "/Resources/Textures/brick_wall.csp";
-            if(File.Exists(path))
-            {
-                var formatter = new BinaryFormatter();
-                formatter.Binder = new ConsoleSpriteConverter();
-                var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
-                wallSprite = (ConsoleSprite)formatter.Deserialize(stream);
-                stream.Close();
-            }            
+            wallSprite = resourcesSystem.Load<ConsoleSprite>("Textures/brick_wall");                      
             UpdateCharBuffer();
         }
 
@@ -177,26 +165,26 @@ namespace ConsoleStein.Rendering
                     transform.Translate(transform.forward, TimeSystem.DeltaTime);
                 }
             }*/
-
-            var width = (short)Console.WindowWidth;
-            var height = (short)Console.WindowHeight;
-            if(width != ScreenWidth || height != ScreenHeight)
+            var tempSize = new Vector2Int(Console.WindowWidth, Console.WindowHeight);
+            if(tempSize != ScreenSize)
             {
-                ScreenWidth = width;
-                ScreenHeight = height;
+                ScreenSize = tempSize;                
                 UpdateCharBuffer();
             }             
             for(int i = 0; i < Components.Count; i++)
             {
                 var camera = Components[i];
                 var cameraTransform = camera.Entity.GetComponent<TransformComponent>();
-                short viewWidth = (short)(camera.ViewPort.width * ScreenWidth);
-                short viewHeight = (short)(camera.ViewPort.height * ScreenHeight);
-                short viewX = (short)(camera.ViewPort.x * ScreenWidth);
-                short viewY = (short)(camera.ViewPort.y * ScreenHeight);
-                for (short x = viewX; x < viewX + viewWidth; x++)
+                RectInt view = new RectInt
+                    (
+                        (int)(camera.ViewPort.x * ScreenSize.x),
+                        (int)(camera.ViewPort.y * ScreenSize.y),
+                        (int)(camera.ViewPort.width * ScreenSize.x),
+                        (int)(camera.ViewPort.height * ScreenSize.y)
+                    );
+                for (int x = view.x; x < view.x + view.width; x++)
                 {
-                    float angle = cameraTransform.rotation - camera.FieldOfView / 2f + (x - viewX) / (float)ScreenWidth * camera.FieldOfView;
+                    float angle = cameraTransform.rotation - camera.FieldOfView / 2f + (x - view.x) / (float)ScreenSize.x * camera.FieldOfView;
                     float dist = 0f;
                     bool hitWall = false;
 
@@ -208,19 +196,22 @@ namespace ConsoleStein.Rendering
                     {
                         dist += 0.1f;
 
-                        int testX = (int)(cameraTransform.position.x + eyeVec.x * dist);
-                        int testY = (int)(cameraTransform.position.y + eyeVec.y * dist);
+                        Vector2Int test = new Vector2Int
+                            (
+                                (int)(cameraTransform.position.x + eyeVec.x * dist),
+                                (int)(cameraTransform.position.y + eyeVec.y * dist)
+                            );                        
 
-                        if (testX < 0 || testX >= 16 || testY < 0 || testY >= 11)
+                        if (test.x < 0 || test.x >= 16 || test.y < 0 || test.y >= 11)
                         {
                             hitWall = true;
                             dist = farClip;
                         }
-                        else if (Map[testY * 16 + testX] != '.')
+                        else if (Map[test.y * 16 + test.x] != '.')
                         {
                             hitWall = true;
 
-                            Vector2 blockMid = new Vector2(testX + 0.5f, testY + 0.5f);
+                            Vector2 blockMid = new Vector2(test.x + 0.5f, test.y + 0.5f);
                             Vector2 testPoint = new Vector2
                                 (
                                 transform.position.x + eyeVec.x * dist,
@@ -231,38 +222,38 @@ namespace ConsoleStein.Rendering
                             
                             if(testAngle >= -Math.PI * 0.25f && testAngle < Math.PI * 0.25f)
                             {
-                                uv.x = testPoint.y - testY;
+                                uv.x = testPoint.y - test.y;
                             }
                             if(testAngle >= Math.PI * 0.25f && testAngle < Math.PI * 0.75f)
                             {
-                                uv.x = testPoint.x - testX;
+                                uv.x = testPoint.x - test.x;
                             }
                             if(testAngle < -Math.PI * 0.25f && testAngle >= -Math.PI * 0.75f)
                             {
-                                uv.x = testPoint.x - testX;
+                                uv.x = testPoint.x - test.x;
                             }
                             if(testAngle >= Math.PI * 0.75f || testAngle < -Math.PI * 0.75f)
                             {
-                                uv.x = testPoint.y - testY;
+                                uv.x = testPoint.y - test.y;
                             }
                         }
                     }
 
-                    int ceiling = (int)((viewHeight / 2f) - viewHeight / dist);
-                    int floor = viewHeight - ceiling;
+                    int ceiling = (int)((view.height / 2f) - view.height / dist);
+                    int floor = view.height - ceiling;
                     
-                    for (int y = viewY; y < viewY + viewHeight; y++)
+                    for (int y = view.y; y < view.y + view.height; y++)
                     {
-                        byte floorShade = GetFloorShade(y - viewY, viewHeight);
-                        int index = y * ScreenWidth + x;
-                        if (y <= ceiling + viewY)
+                        byte floorShade = GetFloorShade(y - view.y, view.height);
+                        int index = y * ScreenSize.x + x;
+                        if (y <= ceiling + view.y)
                         {
                             CharBuffer[index].Attributes = 1;
                             CharBuffer[index].Char.AsciiChar = (byte)'*';
                         }
-                        else if (y > ceiling + viewY && y <= floor + viewY)
+                        else if (y > ceiling + view.y && y <= floor + view.y)
                         {
-                            uv.y = (y - (float)ceiling) / (floor + 1 - (float)ceiling);
+                            uv.y = (y - (float)(ceiling + view.y)) / ((floor + view.y + 1) - (float)(ceiling + view.y));
                             
                             if(wallSprite != null)
                             {
@@ -282,12 +273,12 @@ namespace ConsoleStein.Rendering
                     }
                 }
 
-                PrintText(new RectInt(viewX, viewY, 16, 11), DisplayMap, ConsoleColor.Cyan);
-                PrintText(new RectInt(viewX + (int)cameraTransform.position.x, viewY + 10 - (int)cameraTransform.position.y, 1, 1), ((char)GetRotationChar(cameraTransform.rotation)).ToString(), ConsoleColor.Yellow);
+                PrintText(new RectInt(view.x, view.y, 16, 11), DisplayMap, ConsoleColor.Cyan);
+                PrintText(new RectInt(view.x + (int)cameraTransform.position.x, view.y + 10 - (int)cameraTransform.position.y, 1, 1), ((char)GetRotationChar(cameraTransform.rotation)).ToString(), ConsoleColor.Yellow);
             }                        
 
             WriteConsoleOutput(Handle, CharBuffer,
-                     new Coord() { X = width, Y = height },
+                     new Coord() { X = (short)ScreenSize.x, Y = (short)ScreenSize.y },
                      new Coord() { X = 0, Y = 0 },
                      ref bufferRect);            
         }          
@@ -299,7 +290,7 @@ namespace ConsoleStein.Rendering
                 for (int y = 0; y < rect.height; y++)
                 {
                     int rectIndex = y * 16 + x;
-                    int screenIndex = (rect.y + y) * ScreenWidth + rect.x + x;
+                    int screenIndex = (rect.y + y) * ScreenSize.x + rect.x + x;
                     if (text[rectIndex] == ' ' && blackIsTransparency)
                         continue;
                     CharBuffer[screenIndex].Attributes = (short)color;
@@ -311,11 +302,11 @@ namespace ConsoleStein.Rendering
 
         private void UpdateCharBuffer()
         {
-            CharBuffer = new CharInfo[ScreenWidth * ScreenHeight];
-            bufferRect = new SmallRect() { Left = 0, Top = 0, Right = ScreenWidth, Bottom = ScreenHeight };
+            CharBuffer = new CharInfo[ScreenSize.x * ScreenSize.y];
+            bufferRect = new SmallRect() { Left = 0, Top = 0, Right = (short)ScreenSize.x, Bottom = (short)ScreenSize.y };
         }        
 
-        private byte GetFloorShade(int y, short viewHeight)
+        private byte GetFloorShade(int y, int viewHeight)
         {
             float b = 1f - ((y - viewHeight / 2f) / (viewHeight / 2f));
             if (b < 0.25f)
