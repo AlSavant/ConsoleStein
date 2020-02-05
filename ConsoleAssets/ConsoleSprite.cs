@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SpriteEditor.Models
+namespace ConsoleStein.Assets
 {
     [Serializable]
     public class ConsoleSprite

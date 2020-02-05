@@ -8,6 +8,8 @@ using ConsoleStein.Maths;
 using ConsoleStein.Resources;
 using System.Collections.Generic;
 using ConsoleStein.Components;
+using ConsoleStein.Util;
+using System.Linq;
 
 namespace ConsoleStein.Rendering
 {
@@ -33,6 +35,7 @@ namespace ConsoleStein.Rendering
 
         private SafeFileHandle Handle { get; set; }
         private CharInfo[] CharBuffer { get; set; }
+        private float[] DepthBuffer { get; set; }
         private SmallRect bufferRect;
         private string Map { get; set; }
         private string DisplayMap { get; set; }
@@ -41,9 +44,9 @@ namespace ConsoleStein.Rendering
 
         private InputSystem inputSystem;
 
-        private List<CameraComponent> Components { get; set; }
-
-        private ConsoleSprite wallSprite { get; set; }
+        private List<CameraComponent> Cameras { get; set; }
+        private List<RendererComponent> Renderers { get; set; }
+        private ConsoleMaterial wallMaterial { get; set; }
 
         public void Setup(InputSystem inputSystem, ResourcesSystem resourcesSystem)
         {
@@ -76,7 +79,7 @@ namespace ConsoleStein.Rendering
             DisplayMap += "################";
             ScreenSize = new Vector2Int(Console.WindowWidth, Console.WindowHeight);
 
-            Components = new List<CameraComponent>();
+            Cameras = new List<CameraComponent>();
             var camera = CreateCamera();
             camera.ViewPort = new Rect(0f, 0f, 1f, 1f);
             camera.Entity.GetComponent<TransformComponent>().position = new Vector2(8f, 5f);
@@ -84,11 +87,27 @@ namespace ConsoleStein.Rendering
             var camera2 = CreateCamera();
             camera2.ViewPort = new Rect(0.5f, 0.5f, 0.5f, 0.5f);
             camera2.Entity.GetComponent<TransformComponent>().position = new Vector2(8f, 5f);
-            Components.Add(camera);
-            //Components.Add(camera2);
+            Cameras.Add(camera);
+            //Cameras.Add(camera2);
 
-            wallSprite = resourcesSystem.Load<ConsoleSprite>("Textures/brick_wall");                      
+            wallMaterial = resourcesSystem.Load<ConsoleMaterial>("Materials/BrickMaterial");
+
+            Renderers = new List<RendererComponent>();
+            var cat = CreateCat();
+            cat.Entity.GetComponent<TransformComponent>().position = new Vector2(8.5f, 8.5f);
+            cat.Entity.GetComponent<RendererComponent>().material = resourcesSystem.Load<ConsoleMaterial>("Materials/CatMaterial");
+            Renderers.Add(cat);
             UpdateCharBuffer();
+        }
+
+        private RendererComponent CreateCat()
+        {
+            var entity = new Entity();
+            var transform = new TransformComponent();
+            entity.AddComponent(typeof(TransformComponent), transform);
+            var renderer = new RendererComponent();
+            entity.AddComponent(typeof(RendererComponent), renderer);
+            return renderer;
         }
 
         private CameraComponent CreateCamera()
@@ -106,7 +125,7 @@ namespace ConsoleStein.Rendering
             if (Handle.IsInvalid)
                 return;
 
-            var transform = Components[0].Entity.GetComponent<TransformComponent>();
+            var transform = Cameras[0].Entity.GetComponent<TransformComponent>();
             if (inputSystem.GetKey(EKeyCode.A))
             {
                 transform.rotation -= 0.5f * TimeSystem.DeltaTime;
@@ -171,9 +190,9 @@ namespace ConsoleStein.Rendering
                 ScreenSize = tempSize;                
                 UpdateCharBuffer();
             }             
-            for(int i = 0; i < Components.Count; i++)
+            for(int i = 0; i < Cameras.Count; i++)
             {
-                var camera = Components[i];
+                var camera = Cameras[i];
                 var cameraTransform = camera.Entity.GetComponent<TransformComponent>();
                 RectInt view = new RectInt
                     (
@@ -241,7 +260,7 @@ namespace ConsoleStein.Rendering
 
                     int ceiling = (int)((view.height / 2f) - view.height / dist);
                     int floor = view.height - ceiling;
-                    
+                    DepthBuffer[x] = dist;
                     for (int y = view.y; y < view.y + view.height; y++)
                     {
                         byte floorShade = GetFloorShade(y - view.y, view.height);
@@ -255,9 +274,10 @@ namespace ConsoleStein.Rendering
                         {
                             uv.y = (y - (float)(ceiling + view.y)) / ((floor + view.y + 1) - (float)(ceiling + view.y));
                             
-                            if(wallSprite != null)
+                            if(wallMaterial != null)
                             {
-                                var pixel = wallSprite.SamplePixel(uv);
+
+                                var pixel = wallMaterial.SamplePixel(uv);
                                 if(pixel != null)
                                 {
                                     CharBuffer[index].Attributes = pixel[1];
@@ -269,6 +289,65 @@ namespace ConsoleStein.Rendering
                         {
                             CharBuffer[index].Attributes = 2;
                             CharBuffer[index].Char.AsciiChar = floorShade;
+                        }
+                    }
+                }
+                var orderedRenderers = Renderers.OrderByDescending(x => Vector2.Distance(transform.position, x.Entity.GetComponent<TransformComponent>().position));
+                foreach(var renderer in orderedRenderers)
+                {
+                    var rendererTransform = renderer.Entity.GetComponent<TransformComponent>();
+                    var dist = Vector2.Distance(transform.position, rendererTransform.position);
+                    var dir = rendererTransform.position - transform.position;
+                    Vector2 eye = new Vector2((float)Math.Sin(transform.rotation), (float)Math.Cos(transform.rotation));
+
+                    float angleDiff = (float)(Math.Atan2(eye.y, eye.x) - Math.Atan2(dir.y, dir.x));
+                    if (angleDiff < -Math.PI)
+                        angleDiff += 2f * (float)Math.PI;
+                    if (angleDiff > Math.PI)
+                        angleDiff -= 2f * (float)Math.PI;
+
+                    if (Math.Abs(angleDiff) >= camera.FieldOfView)
+                        continue;
+                    if (dist < camera.NearClippingDistance)
+                        continue;
+                    if (dist > camera.FarClippingDistance)
+                        continue;
+                    float objectCeiling = (int)((view.height / 2f) - view.height / dist);
+                    float objectFloor = view.height - objectCeiling;
+                    float objectHeight = objectFloor - objectCeiling;
+                    float objectAspectRatio = renderer.material.texture.Height / (float)renderer.material.texture.Width;
+                    float objectWidth = objectHeight / objectAspectRatio;
+                    float middle = view.x + (0.5f * (angleDiff / (camera.FieldOfView / 2f)) + 0.5f) * view.width;
+
+                    for(float lx = 0; lx < objectWidth; lx++)
+                    {
+                        for(float ly = 0; ly < objectHeight; ly++)
+                        {
+                            Vector2 uv = new Vector2(lx / objectWidth, ly / objectHeight);
+                            var pixel = renderer.material.texture.SamplePixel(uv);
+                            if (pixel == null)
+                                continue;
+                            Vector2Int objectPos = new Vector2Int
+                                (
+                                    (int)(middle + lx - (objectWidth / 2f)),
+                                    (int)(objectCeiling + ly)
+                                );
+                            if (objectPos.x < view.x)
+                                continue;
+                            if (objectPos.x >= view.x + view.width)
+                                continue;
+                            if (objectPos.y < 0)
+                                continue;
+                            if (objectPos.y >= view.y + view.height)
+                                continue;
+                            if (renderer.material.texture.IsTransparent && pixel[0] == 0 || pixel[1] == 0)
+                                continue;
+                            if (DepthBuffer[objectPos.x] < dist)
+                                continue;
+
+                            int index = objectPos.y * ScreenSize.x + objectPos.x;
+                            CharBuffer[index].Attributes = pixel[1];
+                            CharBuffer[index].Char.AsciiChar = pixel[0];
                         }
                     }
                 }
@@ -303,6 +382,7 @@ namespace ConsoleStein.Rendering
         private void UpdateCharBuffer()
         {
             CharBuffer = new CharInfo[ScreenSize.x * ScreenSize.y];
+            DepthBuffer = new float[ScreenSize.x];
             bufferRect = new SmallRect() { Left = 0, Top = 0, Right = (short)ScreenSize.x, Bottom = (short)ScreenSize.y };
         }        
 

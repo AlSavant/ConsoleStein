@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ConsoleMaterial>
+  <texturePath>Textures/cat</texturePath>
+  <offset>
+    <x>0</x>
+    <y>0</y>
+  </offset>
+  <tiling>
+    <x>1</x>
+    <y>1</y>
+  </tiling>
+</ConsoleMaterial>

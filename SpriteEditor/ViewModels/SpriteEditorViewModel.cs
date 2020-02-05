@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using SpriteEditor.Util;
 using SpriteEditor.Views;
+using ConsoleStein.Assets;
 
 namespace SpriteEditor.ViewModels
 {

@@ -33,6 +33,13 @@ namespace ConsoleStein.Maths
             return (from.x * toOther.x / d) + (from.y * toOther.y / d);
         }
 
+        public static float Distance(Vector2 pointA, Vector2 pointB)
+        {
+            float x = pointA.x - pointB.x;
+            float y = pointA.y - pointB.y;
+            return (float)Math.Sqrt(x * x + y * y);
+        }
+
         public static Vector2 operator +(Vector2 v1, Vector2 v2)
         {
             return new Vector2(v1.x + v2.x, v1.y + v2.y);

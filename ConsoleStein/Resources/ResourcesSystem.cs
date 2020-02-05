@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using ConsoleStein.Util;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+using ConsoleStein.Resources.SerializationStrategies;
 
 namespace ConsoleStein.Resources
 {
-    internal sealed class ResourcesSystem
+    public sealed class ResourcesSystem
     {
         private Dictionary<string, object> ResourcesLookup { get; set; }
-        private Dictionary<string, Func<string, object>> Deserializers { get; set; }
+        private Dictionary<string, ISerializationStrategy> Deserializers { get; set; }
         private string Root { get; set; }
         private bool PathExists { get; set; }
 
@@ -25,8 +24,9 @@ namespace ConsoleStein.Resources
             PathExists = true;
 
             ResourcesLookup = new Dictionary<string, object>();
-            Deserializers = new Dictionary<string, Func<string, object>>();
-            Deserializers.Add(".csp", BinaryStrategy);
+            Deserializers = new Dictionary<string, ISerializationStrategy>();
+            Deserializers.Add(".csp", new BinaryStrategy());
+            Deserializers.Add(".mat", new MaterialStrategy(this));
         }
 
         public T Load<T>(string path)
@@ -49,7 +49,7 @@ namespace ConsoleStein.Resources
             var ext = file.Extension;
             if (!Deserializers.ContainsKey(ext))
                 return default;
-            var val = (T)Deserializers[ext](file.FullName);
+            var val = (T)Deserializers[ext].Deserialize(file.FullName);
             if (val == null)
                 return default;
             ResourcesLookup.Add(path, val);
@@ -74,23 +74,6 @@ namespace ConsoleStein.Resources
         public void UnloadAll()
         {
             ResourcesLookup.Clear();
-        }
-
-        private object BinaryStrategy(string path)
-        {
-            try
-            {
-                var formatter = new BinaryFormatter();
-                formatter.Binder = new BinaryConverter();
-                var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
-                var val = formatter.Deserialize(stream);
-                stream.Close();
-                return val;
-            }
-            catch
-            {
-                return null;
-            }
-        }
+        }        
     }
 }

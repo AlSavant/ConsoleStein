@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ConsoleAssets">
+      <HintPath>..\ConsoleAssets\bin\Release\ConsoleAssets.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -47,6 +50,7 @@
   <ItemGroup>
     <Compile Include="Components\CameraComponent.cs" />
     <Compile Include="Components\Component.cs" />
+    <Compile Include="Components\RendererComponent.cs" />
     <Compile Include="ConsoleStein.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="Input\EKeyCode.cs" />
@@ -58,15 +62,30 @@
     <Compile Include="Maths\Vector2Int.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rendering\ConsoleInterop.cs" />
-    <Compile Include="Rendering\ConsoleSprite.cs" />
+    <Compile Include="Rendering\ConsoleMaterial.cs" />
     <Compile Include="Rendering\RenderingSystem.cs" />
     <Compile Include="Resources\ResourcesSystem.cs" />
+    <Compile Include="Resources\SerializationStrategies\BinaryStrategy.cs" />
+    <Compile Include="Resources\SerializationStrategies\ISerializationStrategy.cs" />
+    <Compile Include="Resources\SerializationStrategies\MaterialStrategy.cs" />
     <Compile Include="Time\TimeSystem.cs" />
-    <Compile Include="Util\BinaryConverter.cs" />
+    <Compile Include="Util\ConsoleSpriteExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <Content Include="Resources\Textures\brick_wall.csp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Materials\BrickMaterial.mat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Textures\cat.csp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Materials\CatMaterial.mat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Textures\cat2.csp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
