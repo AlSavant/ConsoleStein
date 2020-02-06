@@ -9,7 +9,6 @@ using ConsoleStein.Resources;
 using System.Collections.Generic;
 using ConsoleStein.Components;
 using ConsoleStein.Util;
-using System.Linq;
 
 namespace ConsoleStein.Rendering
 {
@@ -44,8 +43,8 @@ namespace ConsoleStein.Rendering
 
         private InputSystem inputSystem;
 
-        private List<CameraComponent> Cameras { get; set; }
-        private List<RendererComponent> Renderers { get; set; }
+        private List<ICameraComponent> Cameras { get; set; }
+        private List<IRendererComponent> Renderers { get; set; }
         private ConsoleMaterial wallMaterial { get; set; }
 
         public void Setup(InputSystem inputSystem, ResourcesSystem resourcesSystem)
@@ -79,24 +78,30 @@ namespace ConsoleStein.Rendering
             DisplayMap += "################";
             ScreenSize = new Vector2Int(Console.WindowWidth, Console.WindowHeight);
 
-            Cameras = new List<CameraComponent>();
+            Cameras = new List<ICameraComponent>();
             var camera = CreateCamera();
             camera.ViewPort = new Rect(0f, 0f, 1f, 1f);
-            camera.Entity.GetComponent<TransformComponent>().position = new Vector2(8f, 5f);
-
-            var camera2 = CreateCamera();
-            camera2.ViewPort = new Rect(0.5f, 0.5f, 0.5f, 0.5f);
-            camera2.Entity.GetComponent<TransformComponent>().position = new Vector2(8f, 5f);
+            camera.Entity.GetComponent<ITransformComponent>().Position = new Vector2(8f, 5f);
             Cameras.Add(camera);
+
+            //var camera2 = CreateCamera();
+            //camera2.ViewPort = new Rect(0.5f, 0.5f, 0.5f, 0.5f);
+            //camera2.Entity.GetComponent<ITransformComponent>().Position = new Vector2(8f, 5f);
             //Cameras.Add(camera2);
 
             wallMaterial = resourcesSystem.Load<ConsoleMaterial>("Materials/BrickMaterial");
 
-            Renderers = new List<RendererComponent>();
+            Renderers = new List<IRendererComponent>();
             var cat = CreateCat();
-            cat.Entity.GetComponent<TransformComponent>().position = new Vector2(8.5f, 8.5f);
-            cat.Entity.GetComponent<RendererComponent>().material = resourcesSystem.Load<ConsoleMaterial>("Materials/CatMaterial");
+            cat.Entity.GetComponent<ITransformComponent>().Position = new Vector2(8.5f, 8.5f);
+            cat.Entity.GetComponent<IRendererComponent>().Material = resourcesSystem.Load<ConsoleMaterial>("Materials/CatMaterial");
             Renderers.Add(cat);
+
+            cat = CreateCat();
+            cat.Entity.GetComponent<ITransformComponent>().Position = new Vector2(9.5f, 9.5f);
+            cat.Entity.GetComponent<IRendererComponent>().Material = resourcesSystem.Load<ConsoleMaterial>("Materials/CatMaterial");
+            Renderers.Add(cat);
+
             UpdateCharBuffer();
         }
 
@@ -104,19 +109,19 @@ namespace ConsoleStein.Rendering
         {
             var entity = new Entity();
             var transform = new TransformComponent();
-            entity.AddComponent(typeof(TransformComponent), transform);
+            entity.AddComponent(typeof(ITransformComponent), transform);
             var renderer = new RendererComponent();
-            entity.AddComponent(typeof(RendererComponent), renderer);
+            entity.AddComponent(typeof(IRendererComponent), renderer);
             return renderer;
         }
 
-        private CameraComponent CreateCamera()
+        private ICameraComponent CreateCamera()
         {
             var entity = new Entity();
             var transform = new TransformComponent();
-            entity.AddComponent(typeof(TransformComponent), transform);
+            entity.AddComponent(typeof(ITransformComponent), transform);
             var camera = new CameraComponent();
-            entity.AddComponent(typeof(CameraComponent), camera);
+            entity.AddComponent(typeof(ICameraComponent), camera);
             return camera;
         }
 
@@ -125,63 +130,63 @@ namespace ConsoleStein.Rendering
             if (Handle.IsInvalid)
                 return;
 
-            var transform = Cameras[0].Entity.GetComponent<TransformComponent>();
+            var transform = Cameras[0].Entity.GetComponent<ITransformComponent>();
             if (inputSystem.GetKey(EKeyCode.A))
             {
-                transform.rotation -= 0.5f * TimeSystem.DeltaTime;
+                transform.Rotation -= 0.5f * TimeSystem.DeltaTime;
             }
             if(inputSystem.GetKey(EKeyCode.D))
             {
-                transform.rotation += 0.5f * TimeSystem.DeltaTime;
+                transform.Rotation += 0.5f * TimeSystem.DeltaTime;
             }
 
             if(inputSystem.GetKey(EKeyCode.W))
             {
-                transform.Translate(transform.forward, TimeSystem.DeltaTime);                
+                transform.Translate(transform.Forward, TimeSystem.DeltaTime);                
 
-                if(Map[(int)transform.position.y * 16 + (int)transform.position.x] != '.')
+                if(Map[(int)transform.Position.y * 16 + (int)transform.Position.x] != '.')
                 {
-                    transform.Translate(transform.back, TimeSystem.DeltaTime);                    
+                    transform.Translate(transform.Back, TimeSystem.DeltaTime);                    
                 }
             }
 
             if (inputSystem.GetKey(EKeyCode.S))
             {
-                transform.Translate(transform.back, TimeSystem.DeltaTime);                
+                transform.Translate(transform.Back, TimeSystem.DeltaTime);                
 
-                if (Map[(int)transform.position.y * 16 + (int)transform.position.x] != '.')
+                if (Map[(int)transform.Position.y * 16 + (int)transform.Position.x] != '.')
                 {
-                    transform.Translate(transform.forward, TimeSystem.DeltaTime);                    
+                    transform.Translate(transform.Forward, TimeSystem.DeltaTime);                    
                 }
             }
 
-            /*transform = Components[1].Entity.GetComponent<TransformComponent>();
+            /*transform = Components[1].Entity.GetComponent<ITransformComponent>();
             if (inputSystem.GetKey(EKeyCode.Left))
             {
-                transform.rotation -= 0.5f * TimeSystem.DeltaTime;
+                transform.Rotation -= 0.5f * TimeSystem.DeltaTime;
             }
             if (inputSystem.GetKey(EKeyCode.Right))
             {
-                transform.rotation += 0.5f * TimeSystem.DeltaTime;
+                transform.Rotation += 0.5f * TimeSystem.DeltaTime;
             }
 
             if (inputSystem.GetKey(EKeyCode.Up))
             {
-                transform.Translate(transform.forward, TimeSystem.DeltaTime);
+                transform.Translate(transform.Forward, TimeSystem.DeltaTime);
 
-                if (Map[(int)transform.position.y * 16 + (int)transform.position.x] != '.')
+                if (Map[(int)transform.Position.y * 16 + (int)transform.Position.x] != '.')
                 {
-                    transform.Translate(transform.back, TimeSystem.DeltaTime);
+                    transform.Translate(transform.Back, TimeSystem.DeltaTime);
                 }
             }
 
             if (inputSystem.GetKey(EKeyCode.Down))
             {
-                transform.Translate(transform.back, TimeSystem.DeltaTime);
+                transform.Translate(transform.Back, TimeSystem.DeltaTime);
 
-                if (Map[(int)transform.position.y * 16 + (int)transform.position.x] != '.')
+                if (Map[(int)transform.Position.y * 16 + (int)transform.Position.x] != '.')
                 {
-                    transform.Translate(transform.forward, TimeSystem.DeltaTime);
+                    transform.Translate(transform.Forward, TimeSystem.DeltaTime);
                 }
             }*/
             var tempSize = new Vector2Int(Console.WindowWidth, Console.WindowHeight);
@@ -193,7 +198,7 @@ namespace ConsoleStein.Rendering
             for(int i = 0; i < Cameras.Count; i++)
             {
                 var camera = Cameras[i];
-                var cameraTransform = camera.Entity.GetComponent<TransformComponent>();
+                var cameraTransform = camera.Entity.GetComponent<ITransformComponent>();
                 RectInt view = new RectInt
                     (
                         (int)(camera.ViewPort.x * ScreenSize.x),
@@ -203,7 +208,7 @@ namespace ConsoleStein.Rendering
                     );
                 for (int x = view.x; x < view.x + view.width; x++)
                 {
-                    float angle = cameraTransform.rotation - camera.FieldOfView / 2f + (x - view.x) / (float)ScreenSize.x * camera.FieldOfView;
+                    float angle = cameraTransform.Rotation - camera.FieldOfView / 2f + (x - view.x) / (float)ScreenSize.x * camera.FieldOfView;
                     float dist = 0f;
                     bool hitWall = false;
 
@@ -217,8 +222,8 @@ namespace ConsoleStein.Rendering
 
                         Vector2Int test = new Vector2Int
                             (
-                                (int)(cameraTransform.position.x + eyeVec.x * dist),
-                                (int)(cameraTransform.position.y + eyeVec.y * dist)
+                                (int)(cameraTransform.Position.x + eyeVec.x * dist),
+                                (int)(cameraTransform.Position.y + eyeVec.y * dist)
                             );                        
 
                         if (test.x < 0 || test.x >= 16 || test.y < 0 || test.y >= 11)
@@ -233,8 +238,8 @@ namespace ConsoleStein.Rendering
                             Vector2 blockMid = new Vector2(test.x + 0.5f, test.y + 0.5f);
                             Vector2 testPoint = new Vector2
                                 (
-                                transform.position.x + eyeVec.x * dist,
-                                transform.position.y + eyeVec.y * dist
+                                transform.Position.x + eyeVec.x * dist,
+                                transform.Position.y + eyeVec.y * dist
                                 );
 
                             float testAngle = (float)Math.Atan2(testPoint.y - blockMid.y, testPoint.x - blockMid.x);
@@ -292,13 +297,13 @@ namespace ConsoleStein.Rendering
                         }
                     }
                 }
-                var orderedRenderers = Renderers.OrderByDescending(x => Vector2.Distance(transform.position, x.Entity.GetComponent<TransformComponent>().position));
-                foreach(var renderer in orderedRenderers)
+                Dictionary<Vector2Int, float> depthBuffer = new Dictionary<Vector2Int, float>();                
+                foreach(var renderer in Renderers)
                 {
-                    var rendererTransform = renderer.Entity.GetComponent<TransformComponent>();
-                    var dist = Vector2.Distance(transform.position, rendererTransform.position);
-                    var dir = rendererTransform.position - transform.position;
-                    Vector2 eye = new Vector2((float)Math.Sin(transform.rotation), (float)Math.Cos(transform.rotation));
+                    var rendererTransform = renderer.Entity.GetComponent<ITransformComponent>();
+                    var dist = Vector2.Distance(transform.Position, rendererTransform.Position);
+                    var dir = rendererTransform.Position - transform.Position;
+                    Vector2 eye = new Vector2((float)Math.Sin(transform.Rotation), (float)Math.Cos(transform.Rotation));
 
                     float angleDiff = (float)(Math.Atan2(eye.y, eye.x) - Math.Atan2(dir.y, dir.x));
                     if (angleDiff < -Math.PI)
@@ -315,7 +320,7 @@ namespace ConsoleStein.Rendering
                     float objectCeiling = (int)((view.height / 2f) - view.height / dist);
                     float objectFloor = view.height - objectCeiling;
                     float objectHeight = objectFloor - objectCeiling;
-                    float objectAspectRatio = renderer.material.texture.Height / (float)renderer.material.texture.Width;
+                    float objectAspectRatio = renderer.Material.texture.Height / (float)renderer.Material.texture.Width;
                     float objectWidth = objectHeight / objectAspectRatio;
                     float middle = view.x + (0.5f * (angleDiff / (camera.FieldOfView / 2f)) + 0.5f) * view.width;
 
@@ -324,7 +329,7 @@ namespace ConsoleStein.Rendering
                         for(float ly = 0; ly < objectHeight; ly++)
                         {
                             Vector2 uv = new Vector2(lx / objectWidth, ly / objectHeight);
-                            var pixel = renderer.material.texture.SamplePixel(uv);
+                            var pixel = renderer.Material.texture.SamplePixel(uv);
                             if (pixel == null)
                                 continue;
                             Vector2Int objectPos = new Vector2Int
@@ -340,20 +345,27 @@ namespace ConsoleStein.Rendering
                                 continue;
                             if (objectPos.y >= view.y + view.height)
                                 continue;
-                            if (renderer.material.texture.IsTransparent && pixel[0] == 0 || pixel[1] == 0)
+                            if (renderer.Material.texture.IsTransparent && pixel[0] == 0 || pixel[1] == 0)
                                 continue;
                             if (DepthBuffer[objectPos.x] < dist)
+                                continue;
+                            if (!depthBuffer.ContainsKey(objectPos)) 
+                            {
+                                depthBuffer.Add(objectPos, dist);
+                            }
+                            if (dist > depthBuffer[objectPos])
                                 continue;
 
                             int index = objectPos.y * ScreenSize.x + objectPos.x;
                             CharBuffer[index].Attributes = pixel[1];
                             CharBuffer[index].Char.AsciiChar = pixel[0];
+                            depthBuffer[objectPos] = dist;
                         }
                     }
                 }
 
                 PrintText(new RectInt(view.x, view.y, 16, 11), DisplayMap, ConsoleColor.Cyan);
-                PrintText(new RectInt(view.x + (int)cameraTransform.position.x, view.y + 10 - (int)cameraTransform.position.y, 1, 1), ((char)GetRotationChar(cameraTransform.rotation)).ToString(), ConsoleColor.Yellow);
+                PrintText(new RectInt(view.x + (int)cameraTransform.Position.x, view.y + 10 - (int)cameraTransform.Position.y, 1, 1), ((char)GetRotationChar(cameraTransform.Rotation)).ToString(), ConsoleColor.Yellow);
             }                        
 
             WriteConsoleOutput(Handle, CharBuffer,

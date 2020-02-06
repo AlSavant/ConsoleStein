@@ -49,10 +49,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\CameraComponent.cs" />
-    <Compile Include="Components\Component.cs" />
+    <Compile Include="Components\ICameraComponent.cs" />
+    <Compile Include="Components\IComponent.cs" />
+    <Compile Include="Components\IRendererComponent.cs" />
+    <Compile Include="Components\ITransformComponent.cs" />
     <Compile Include="Components\RendererComponent.cs" />
     <Compile Include="ConsoleStein.cs" />
-    <Compile Include="Entity.cs" />
+    <Compile Include="Entity\Entity.cs" />
+    <Compile Include="Entity\IEntity.cs" />
     <Compile Include="Input\EKeyCode.cs" />
     <Compile Include="Input\InputSystem.cs" />
     <Compile Include="Maths\Rect.cs" />

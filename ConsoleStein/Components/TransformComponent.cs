@@ -3,12 +3,14 @@ using ConsoleStein.Maths;
 
 namespace ConsoleStein.Components
 {
-    public sealed class TransformComponent : Component
+    public sealed class TransformComponent : ITransformComponent
     {
-        public Vector2 position;
+        public IEntity Entity { get; set; }
+
+        public Vector2 Position { get; set; }
 
         private float m_rotation;
-        public float rotation 
+        public float Rotation 
         {
             get
             {
@@ -26,10 +28,10 @@ namespace ConsoleStein.Components
 
         private void RecalculateOrientation()
         {
-            forward = RotateVector(Vector2.forward, rotation);
-            back = RotateVector(Vector2.back, rotation);
-            right = RotateVector(Vector2.right, rotation);
-            left = RotateVector(Vector2.left, rotation);
+            Forward = RotateVector(Vector2.forward, Rotation);
+            Back = RotateVector(Vector2.back, Rotation);
+            Right = RotateVector(Vector2.right, Rotation);
+            Left = RotateVector(Vector2.left, Rotation);
         }
 
         private Vector2 RotateVector(Vector2 vector, float rotation)
@@ -42,15 +44,15 @@ namespace ConsoleStein.Components
             return new Vector2((cos * tx) + (ty * sin), (cos * ty) - (sin * tx));            
         }
 
-        public Vector2 forward { get; private set; } = Vector2.forward;
-        public Vector2 back { get; private set; } = Vector2.back;
-        public Vector2 right { get; private set; } = Vector2.right;
-        public Vector2 left { get; private set; } = Vector2.left;
+        public Vector2 Forward { get; private set; } = Vector2.forward;
+        public Vector2 Back { get; private set; } = Vector2.back;
+        public Vector2 Right { get; private set; } = Vector2.right;
+        public Vector2 Left { get; private set; } = Vector2.left;
 
 
         public void Translate(Vector2 direction, float speed)
         {
-            position += direction * speed;
+            Position += direction * speed;
         }
     }
 }

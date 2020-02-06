@@ -4,22 +4,22 @@ using ConsoleStein.Components;
 
 namespace ConsoleStein
 {
-    public sealed class Entity
+    public sealed class Entity : IEntity
     {
-        public Dictionary<Type, Component> Components { get; set; }
+        public Dictionary<Type, IComponent> Components { get; set; }
 
         public Entity()
         {
-            Components = new Dictionary<Type, Component>();            
+            Components = new Dictionary<Type, IComponent>();            
         }
 
-        public void AddComponent(Type type, Component component)
+        public void AddComponent(Type type, IComponent component)
         {
             Components.Add(type, component);
             component.Entity = this;
         }
 
-        public T GetComponent<T>() where T : Component
+        public T GetComponent<T>() where T : IComponent
         {
             return (T)Components[typeof(T)];
         }

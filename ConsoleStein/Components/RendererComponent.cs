@@ -2,8 +2,9 @@
 
 namespace ConsoleStein.Components
 {
-    public class RendererComponent : Component
+    public class RendererComponent : IRendererComponent
     {
-        public ConsoleMaterial material;
+        public IEntity Entity { get; set; }
+        public ConsoleMaterial Material { get; set; }
     }
 }
