@@ -9,6 +9,7 @@ using ConsoleStein.Resources;
 using System.Collections.Generic;
 using ConsoleStein.Components;
 using ConsoleStein.Util;
+using ConsoleStein.Assets;
 
 namespace ConsoleStein.Rendering
 {
@@ -46,6 +47,8 @@ namespace ConsoleStein.Rendering
         private List<ICameraComponent> Cameras { get; set; }
         private List<IRendererComponent> Renderers { get; set; }
         private ConsoleMaterial wallMaterial { get; set; }
+        private ConsoleSprite skybox { get; set; }
+        private float skyboxRotation = 0f;
 
         public void Setup(InputSystem inputSystem, ResourcesSystem resourcesSystem)
         {
@@ -90,6 +93,7 @@ namespace ConsoleStein.Rendering
             //Cameras.Add(camera2);
 
             wallMaterial = resourcesSystem.Load<ConsoleMaterial>("Materials/BrickMaterial");
+            skybox = resourcesSystem.Load<ConsoleSprite>("Textures/cloudy_skybox");
 
             Renderers = new List<IRendererComponent>();
             var cat = CreateCat();
@@ -129,7 +133,7 @@ namespace ConsoleStein.Rendering
         {
             if (Handle.IsInvalid)
                 return;
-
+            skyboxRotation += TimeSystem.DeltaTime * 0.01f;
             var transform = Cameras[0].Entity.GetComponent<ITransformComponent>();
             if (inputSystem.GetKey(EKeyCode.A))
             {
@@ -270,10 +274,17 @@ namespace ConsoleStein.Rendering
                     {
                         byte floorShade = GetFloorShade(y - view.y, view.height);
                         int index = y * ScreenSize.x + x;
-                        if (y <= ceiling + view.y)
+                        if (ceiling != 0 && y <= ceiling + view.y)
                         {
-                            CharBuffer[index].Attributes = 1;
-                            CharBuffer[index].Char.AsciiChar = (byte)'*';
+                            float degrees = (angle + skyboxRotation) * (180f / (float)Math.PI);
+                            degrees %= 360;
+                            if (degrees < 0)
+                                degrees += 360;
+                            float skyX = degrees / 360f;
+                            float skyY = (y - view.y) / (view.height / 2f);
+                            var skyColor = skybox.SamplePixel(new Vector2(skyX, skyY));
+                            CharBuffer[index].Attributes = skyColor[1];
+                            CharBuffer[index].Char.AsciiChar = skyColor[0];
                         }
                         else if (y > ceiling + view.y && y <= floor + view.y)
                         {
