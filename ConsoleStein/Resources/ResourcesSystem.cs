@@ -27,6 +27,7 @@ namespace ConsoleStein.Resources
             Deserializers = new Dictionary<string, ISerializationStrategy>();
             Deserializers.Add(".csp", new BinaryStrategy());
             Deserializers.Add(".mat", new MaterialStrategy(this));
+            Deserializers.Add(".sky", new SkyboxStrategy(this));
         }
 
         public T Load<T>(string path)

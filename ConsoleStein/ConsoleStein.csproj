@@ -68,10 +68,13 @@
     <Compile Include="Rendering\ConsoleInterop.cs" />
     <Compile Include="Rendering\ConsoleMaterial.cs" />
     <Compile Include="Rendering\RenderingSystem.cs" />
+    <Compile Include="Rendering\SkyboxLayer.cs" />
+    <Compile Include="Rendering\SkyboxMaterial.cs" />
     <Compile Include="Resources\ResourcesSystem.cs" />
     <Compile Include="Resources\SerializationStrategies\BinaryStrategy.cs" />
     <Compile Include="Resources\SerializationStrategies\ISerializationStrategy.cs" />
     <Compile Include="Resources\SerializationStrategies\MaterialStrategy.cs" />
+    <Compile Include="Resources\SerializationStrategies\SkyboxStrategy.cs" />
     <Compile Include="Time\TimeSystem.cs" />
     <Compile Include="Util\ConsoleSpriteExtensions.cs" />
   </ItemGroup>
@@ -92,9 +95,18 @@
     <Content Include="Resources\Textures\cat2.csp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\Textures\cloudy_skybox.csp">
+    <Content Include="Resources\Textures\skybox_layer_0.csp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resources\Textures\skybox_layer_1.csp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Textures\skybox_layer_2.csp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="Resources\Materials\Skybox.sky">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

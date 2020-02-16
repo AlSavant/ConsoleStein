@@ -47,8 +47,7 @@ namespace ConsoleStein.Rendering
         private List<ICameraComponent> Cameras { get; set; }
         private List<IRendererComponent> Renderers { get; set; }
         private ConsoleMaterial wallMaterial { get; set; }
-        private ConsoleSprite skybox { get; set; }
-        private float skyboxRotation = 0f;
+        private SkyboxMaterial skybox { get; set; }
 
         public void Setup(InputSystem inputSystem, ResourcesSystem resourcesSystem)
         {
@@ -92,8 +91,7 @@ namespace ConsoleStein.Rendering
             //camera2.Entity.GetComponent<ITransformComponent>().Position = new Vector2(8f, 5f);
             //Cameras.Add(camera2);
 
-            wallMaterial = resourcesSystem.Load<ConsoleMaterial>("Materials/BrickMaterial");
-            skybox = resourcesSystem.Load<ConsoleSprite>("Textures/cloudy_skybox");
+            wallMaterial = resourcesSystem.Load<ConsoleMaterial>("Materials/BrickMaterial");            
 
             Renderers = new List<IRendererComponent>();
             var cat = CreateCat();
@@ -107,6 +105,8 @@ namespace ConsoleStein.Rendering
             Renderers.Add(cat);
 
             UpdateCharBuffer();
+
+            skybox = resourcesSystem.Load<SkyboxMaterial>("Materials/Skybox");
         }
 
         private RendererComponent CreateCat()
@@ -133,7 +133,8 @@ namespace ConsoleStein.Rendering
         {
             if (Handle.IsInvalid)
                 return;
-            skyboxRotation += TimeSystem.DeltaTime * 0.01f;
+            skybox.layers[0].rotation += TimeSystem.DeltaTime * 0.01f;
+            skybox.layers[1].rotation += TimeSystem.DeltaTime * 0.005f;
             var transform = Cameras[0].Entity.GetComponent<ITransformComponent>();
             if (inputSystem.GetKey(EKeyCode.A))
             {
@@ -276,15 +277,32 @@ namespace ConsoleStein.Rendering
                         int index = y * ScreenSize.x + x;
                         if (ceiling != 0 && y <= ceiling + view.y)
                         {
-                            float degrees = (angle + skyboxRotation) * (180f / (float)Math.PI);
-                            degrees %= 360;
-                            if (degrees < 0)
-                                degrees += 360;
-                            float skyX = degrees / 360f;
-                            float skyY = (y - view.y) / (view.height / 2f);
-                            var skyColor = skybox.SamplePixel(new Vector2(skyX, skyY));
-                            CharBuffer[index].Attributes = skyColor[1];
-                            CharBuffer[index].Char.AsciiChar = skyColor[0];
+                            byte[] pix = null;
+                            foreach(var layer in skybox.layers)
+                            {
+                                float degrees = (angle + layer.rotation) * (180f / (float)Math.PI);
+                                degrees %= 360;
+                                if (degrees < 0)
+                                    degrees += 360;
+                                float skyX = degrees / 360f;
+                                float skyY = (y - view.y) / (view.height / 2f);
+                                var skyColor = layer.texture.SamplePixel(new Vector2(skyX, skyY));
+                                if (skyColor == null || skyColor[0] == ' ' || skyColor[1] == 0)
+                                    continue;
+                                pix = skyColor;
+                                break;
+                            }
+                            if(pix != null)
+                            {
+                                CharBuffer[index].Attributes = pix[1];
+                                CharBuffer[index].Char.AsciiChar = pix[0];
+                            }
+                            else
+                            {
+                                CharBuffer[index].Attributes = 0;
+                                CharBuffer[index].Char.AsciiChar = 0;
+                            }
+                            
                         }
                         else if (y > ceiling + view.y && y <= floor + view.y)
                         {

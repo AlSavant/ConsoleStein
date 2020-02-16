@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SkyboxMaterial>
+  <layers>
+    <SkyboxLayer>
+      <texturePath>Textures/skybox_layer_2</texturePath>
+      <rotation>0</rotation>
+    </SkyboxLayer>
+    <SkyboxLayer>
+      <texturePath>Textures/skybox_layer_1</texturePath>
+      <rotation>0</rotation>
+    </SkyboxLayer>
+    <SkyboxLayer>
+      <texturePath>Textures/skybox_layer_0</texturePath>
+      <rotation>0</rotation>
+    </SkyboxLayer>
+  </layers>
+</SkyboxMaterial>
