@@ -48,6 +48,7 @@ namespace ConsoleStein.Rendering
         private List<IRendererComponent> Renderers { get; set; }
         private ConsoleMaterial wallMaterial { get; set; }
         private SkyboxMaterial skybox { get; set; }
+        private ConsoleSprite floorSprite { get; set; }
 
         public void Setup(InputSystem inputSystem, ResourcesSystem resourcesSystem)
         {
@@ -91,7 +92,8 @@ namespace ConsoleStein.Rendering
             //camera2.Entity.GetComponent<ITransformComponent>().Position = new Vector2(8f, 5f);
             //Cameras.Add(camera2);
 
-            wallMaterial = resourcesSystem.Load<ConsoleMaterial>("Materials/BrickMaterial");            
+            wallMaterial = resourcesSystem.Load<ConsoleMaterial>("Materials/BrickMaterial");
+            floorSprite = resourcesSystem.Load<ConsoleSprite>("Textures/brick_wall");
 
             Renderers = new List<IRendererComponent>();
             var cat = CreateCat();
@@ -134,7 +136,7 @@ namespace ConsoleStein.Rendering
             if (Handle.IsInvalid)
                 return;
             skybox.layers[0].rotation += TimeSystem.DeltaTime * 0.01f;
-            skybox.layers[1].rotation += TimeSystem.DeltaTime * 0.005f;
+            //skybox.layers[1].rotation += TimeSystem.DeltaTime * 0.005f;
             var transform = Cameras[0].Entity.GetComponent<ITransformComponent>();
             if (inputSystem.GetKey(EKeyCode.A))
             {
@@ -273,7 +275,7 @@ namespace ConsoleStein.Rendering
                     DepthBuffer[x] = dist;
                     for (int y = view.y; y < view.y + view.height; y++)
                     {
-                        byte floorShade = GetFloorShade(y - view.y, view.height);
+                        byte[] floorShade = GetFloorShade(y - view.y, view.height, transform.Position, transform.Forward, dist);
                         int index = y * ScreenSize.x + x;
                         if (ceiling != 0 && y <= ceiling + view.y)
                         {
@@ -321,8 +323,8 @@ namespace ConsoleStein.Rendering
                         }
                         else
                         {
-                            CharBuffer[index].Attributes = 2;
-                            CharBuffer[index].Char.AsciiChar = floorShade;
+                            CharBuffer[index].Attributes = floorShade[1];
+                            CharBuffer[index].Char.AsciiChar = floorShade[0];
                         }
                     }
                 }
@@ -427,26 +429,31 @@ namespace ConsoleStein.Rendering
             bufferRect = new SmallRect() { Left = 0, Top = 0, Right = (short)ScreenSize.x, Bottom = (short)ScreenSize.y };
         }        
 
-        private byte GetFloorShade(int y, int viewHeight)
+        private byte[] GetFloorShade(int y, int viewHeight, Vector2 position, Vector2 direction, float distance)
         {
             float b = 1f - ((y - viewHeight / 2f) / (viewHeight / 2f));
+            distance *= b;
+            Vector2 terrainLocation = position + direction * distance;
+            Vector2Int coordinates = new Vector2Int((int)terrainLocation.x, (int)terrainLocation.y);
+            Vector2 uvs = new Vector2(terrainLocation.x - coordinates.x, terrainLocation.y - coordinates.y);
+            byte color = floorSprite.SamplePixel(uvs)[1];
             if (b < 0.25f)
             {
-                return (byte)'#';
+                return new byte[] { (byte)'#', color };
             }
             if (b < 0.5f)
             {
-                return (byte)'x';
+                return new byte[] { (byte)'x', color };                
             }
             if (b < 0.75f)
             {
-                return (byte)'-';
+                return new byte[] { (byte)'-', color };                
             }
             if (b < 0.9f)
             {
-                return (byte)'.';
+                return new byte[] { (byte)'.', color };
             }
-            return (byte)' ';
+            return new byte[] { (byte)' ', 0 };
 
         }
 

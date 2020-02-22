@@ -6,10 +6,6 @@
       <rotation>0</rotation>
     </SkyboxLayer>
     <SkyboxLayer>
-      <texturePath>Textures/skybox_layer_1</texturePath>
-      <rotation>0</rotation>
-    </SkyboxLayer>
-    <SkyboxLayer>
       <texturePath>Textures/skybox_layer_0</texturePath>
       <rotation>0</rotation>
     </SkyboxLayer>
