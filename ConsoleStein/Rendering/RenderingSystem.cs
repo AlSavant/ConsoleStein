@@ -38,6 +38,7 @@ namespace ConsoleStein.Rendering
         private float[] DepthBuffer { get; set; }
         private SmallRect bufferRect;
         private string Map { get; set; }
+        private string TerrainMap { get; set; }
         private string DisplayMap { get; set; }
 
         public Vector2Int ScreenSize { get; set; }        
@@ -66,6 +67,19 @@ namespace ConsoleStein.Rendering
             Map += "M..............M";
             Map += "M..............M";
             Map += "MMMMMMMMMMMMMMMM";
+
+            TerrainMap = string.Empty;
+            TerrainMap += "MMMMMMMMMMMMMMMM";
+            TerrainMap += "M,,,,,,,,,,,,,,M";
+            TerrainMap += "M,,,,,........,M";
+            TerrainMap += "MFFFF,........,M";
+            TerrainMap += "M,,,,,........,M";
+            TerrainMap += "M,........,,,,,M";
+            TerrainMap += "M,........,OOOOM";
+            TerrainMap += "M,........,,,,,M";
+            TerrainMap += "M,............,M";
+            TerrainMap += "M,,,,,,,,,,,,,,M";
+            TerrainMap += "MMMMMMMMMMMMMMMM";
 
             DisplayMap = string.Empty;
             DisplayMap += "###~LEVEL-1~####";
@@ -225,7 +239,7 @@ namespace ConsoleStein.Rendering
                     Vector2 uv = Vector2.zero;
                     while (!hitWall && dist < farClip)
                     {
-                        dist += 0.1f;
+                        dist += 0.01f;
 
                         Vector2Int test = new Vector2Int
                             (
@@ -274,8 +288,7 @@ namespace ConsoleStein.Rendering
                     int floor = view.height - ceiling;
                     DepthBuffer[x] = dist;
                     for (int y = view.y; y < view.y + view.height; y++)
-                    {
-                        byte[] floorShade = GetFloorShade(y - view.y, view.height, transform.Position, transform.Forward, dist);
+                    {                        
                         int index = y * ScreenSize.x + x;
                         if (ceiling != 0 && y <= ceiling + view.y)
                         {
@@ -323,6 +336,7 @@ namespace ConsoleStein.Rendering
                         }
                         else
                         {
+                            byte[] floorShade = GetFloorShade(y - view.y, view.height, transform.Position, eyeVec, dist, view.height - floor);
                             CharBuffer[index].Attributes = floorShade[1];
                             CharBuffer[index].Char.AsciiChar = floorShade[0];
                         }
@@ -429,27 +443,39 @@ namespace ConsoleStein.Rendering
             bufferRect = new SmallRect() { Left = 0, Top = 0, Right = (short)ScreenSize.x, Bottom = (short)ScreenSize.y };
         }        
 
-        private byte[] GetFloorShade(int y, int viewHeight, Vector2 position, Vector2 direction, float distance)
+        private byte[] GetFloorShade(int y, int viewHeight, Vector2 position, Vector2 direction, float hitDistance, int floorLines)
         {
-            float b = 1f - ((y - viewHeight / 2f) / (viewHeight / 2f));
-            distance *= b;
-            Vector2 terrainLocation = position + direction * distance;
-            Vector2Int coordinates = new Vector2Int((int)terrainLocation.x, (int)terrainLocation.y);
-            Vector2 uvs = new Vector2(terrainLocation.x - coordinates.x, terrainLocation.y - coordinates.y);
-            byte color = floorSprite.SamplePixel(uvs)[1];
+            var b = Math.Abs((y - viewHeight) / (float)floorLines);            
+            hitDistance *= b;
+            Vector2 terrainLocation = position + direction * hitDistance;            
+            byte color = 0;
+            Vector2Int test = new Vector2Int((int)terrainLocation.x, (int)terrainLocation.y);
+            if (test.x < 0 || test.x >= 16 || test.y < 0 || test.y >= 11)
+            {
+                color = 0;
+            }
+            else if (TerrainMap[test.y * 16 + test.x] == '.')
+            {
+                color = 2;
+            }                
+            else if (TerrainMap[test.y * 16 + test.x] == ',')
+            {
+                color = 1;
+            }                      
+            
             if (b < 0.25f)
             {
                 return new byte[] { (byte)'#', color };
             }
-            if (b < 0.5f)
+            else if (b < 0.5f)
             {
                 return new byte[] { (byte)'x', color };                
             }
-            if (b < 0.75f)
+            else if (b < 0.75f)
             {
                 return new byte[] { (byte)'-', color };                
             }
-            if (b < 0.9f)
+            else if (b < 1f)
             {
                 return new byte[] { (byte)'.', color };
             }
